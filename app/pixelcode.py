@@ -160,46 +160,19 @@ class EmailClient:
         self.email_address: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
         self.password: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
         self.server: smtplib.SMTP_SSL | None = None
-
-    def connect(self):
-        """
-        Establishes a reusable SMTP connection.
-
-        This method establishes a connection to the SMTP server using the email address
-        and password provided in the environment variables.
-        """
-        if not self.server:
-            context = ssl.create_default_context()
-            self.server = smtplib.SMTP_SSL(
-                self.server_address, self.port, context=context
-            )
-            self.server.login(self.email_address, self.password)
-
-    def disconnect(self):
-        """
-        Closes the SMTP connection.
-
-        This method closes the connection to the SMTP server.
-        """
-        if self.server:
-            self.server.quit()
-            self.server = None
+        self.context = ssl.create_default_context()
 
     def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
         """
-        Sends an email using a reusable SMTP connection.
-
-        This method sends an email message to the specified recipient
-        using the established SMTP connection.
-
         Args:
             message: The email message to send.
             receiver_email: The recipient's email address.
         """
-        self.connect()
-        assert self.server is not None
-        self.server.sendmail(self.email_address, receiver_email, message.as_string())
-        self.disconnect()
+        with smtplib.SMTP_SSL(
+            self.server_address, self.port, context=self.context
+        ) as server:
+            server.login(self.email_address, self.password)
+            server.sendmail(self.email_address, receiver_email, message.as_string())
 
 
 class PixelCode:
