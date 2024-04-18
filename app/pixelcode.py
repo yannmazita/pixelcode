@@ -31,7 +31,11 @@ class Employee:
 
 
 class Employees:
-    """The employees manager."""
+    """The employees manager.
+
+    Attributes:
+        employees: The employees in the company.
+    """
 
     def __init__(self):
         self.employees: dict[UUID, Employee] = {}
@@ -104,12 +108,28 @@ class Employees:
 
 
 class Email:
+    """
+    An email message.
+
+    Attributes:
+        message: The email message.
+    """
+
     EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
 
     def __init__(self):
         self.message: MIMEMultipart = MIMEMultipart()
 
     def create_email(self, receiver_email: str, email_code: str) -> None:
+        """
+        Creates an email message.
+
+        This method creates an email message with the given receiver email and email code.
+
+        Args:
+            receiver_email: The email address of the receiver.
+            email_code: The email verification code.
+        """
         sender_email: str = self.EMAIL_ADDRESS
         self.receiver_email: str = receiver_email
         self.message["From"] = sender_email
@@ -121,6 +141,19 @@ class Email:
 
 
 class EmailClient:
+    """
+    An email client.
+
+    This class is used to send emails using an SMTP server. It establishes a reusable SMTP connection.
+
+    Attributes:
+        server_address: The address of the SMTP server.
+        port: The port of the SMTP server.
+        email_address: The email address of the sender.
+        password: The password of the email account.
+        server: The SMTP server connection.
+    """
+
     def __init__(self):
         self.server_address: str = json.load(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
         self.port: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
@@ -129,7 +162,12 @@ class EmailClient:
         self.server: smtplib.SMTP_SSL | None = None
 
     def connect(self):
-        """Establishes a reusable SMTP connection."""
+        """
+        Establishes a reusable SMTP connection.
+
+        This method establishes a connection to the SMTP server using the email address
+        and password provided in the environment variables.
+        """
         if not self.server:
             context = ssl.create_default_context()
             self.server = smtplib.SMTP_SSL(
@@ -138,7 +176,11 @@ class EmailClient:
             self.server.login(self.email_address, self.password)
 
     def disconnect(self):
-        """Closes the SMTP connection."""
+        """
+        Closes the SMTP connection.
+
+        This method closes the connection to the SMTP server.
+        """
         if self.server:
             self.server.quit()
             self.server = None
@@ -146,6 +188,10 @@ class EmailClient:
     def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
         """
         Sends an email using a reusable SMTP connection.
+
+        This method sends an email message to the specified recipient
+        using the established SMTP connection.
+
         Args:
             message: The email message to send.
             receiver_email: The recipient's email address.
@@ -157,6 +203,14 @@ class EmailClient:
 
 
 class PixelCode:
+    """
+    The PixelCode class.
+
+    Attributes:
+        employees: The employees manager.
+        email_client: The email client.
+    """
+
     def __init__(self):
         self.employees: Employees = Employees()
         self.email_client: EmailClient = EmailClient()
@@ -164,6 +218,8 @@ class PixelCode:
     def create_qr_code(self, user_id: UUID) -> None:
         """
         Creates a QR code.
+
+        This method generates a QR code for the given user ID and saves it as a PNG file.
         Args:
             user_id: The ID of the user.
         """
