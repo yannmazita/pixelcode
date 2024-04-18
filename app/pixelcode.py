@@ -1,18 +1,11 @@
-import asyncio
-import csv
 import hashlib
-import json
 import os
 import smtplib
 import ssl
 import qrcode
-import requests
 from uuid import UUID
-from email import encoders
-from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
 
 from app.exceptions import NoEmployeeInstance
 
@@ -36,7 +29,11 @@ class Employee:
 
 
 class Employees:
-    """The employees manager."""
+    """The employees manager.
+
+    Attributes:
+        employees: The employees in the company.
+    """
 
     def __init__(self):
         self.employees: dict[UUID, Employee] = {}
@@ -57,10 +54,9 @@ class Employees:
         Args:
             user_id: The ID of the user.
         """
-        try:
-            self.employees.pop(user_id)
-        except KeyError:
+        if user_id not in self.employees:
             raise NoEmployeeInstance(user_id)
+        self.employees.pop(user_id)
 
     def get_employee_instance(self, user_id: UUID) -> Employee:
         """
@@ -72,10 +68,9 @@ class Employees:
         Returns:
             The employee instance.
         """
-        try:
-            return self.employees[user_id]
-        except KeyError:
+        if user_id not in self.employees:
             raise NoEmployeeInstance(user_id)
+        return self.employees[user_id]
 
     def compute_email_code(self, user_id: UUID) -> str:
         """
@@ -108,60 +103,90 @@ class Employees:
         return False
 
 
-class Emails:
-    PASSWORD: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
-    PORT: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
-    SERVER_ADDRESS: str = json.loads(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
-    EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
+class Email:
+    """
+    An email message.
+
+    Attributes:
+        message: The email message.
+    """
+
+    EMAIL_ADDRESS: str = os.getenv("SMTP_EMAIL_ADDRESS")  # type: ignore
 
     def __init__(self):
-        pass
+        self.message: MIMEMultipart = MIMEMultipart()
 
-    def create_email(self, user_id: UUID, employees: Employees) -> None:
+    def create_email(self, receiver_email: str, email_code: str) -> None:
         """
-        Creates an email.
+        Creates an email message.
+
+        This method creates an email message with the given receiver email and email code.
+
         Args:
-            user_id: The ID of the user.
+            receiver_email: The email address of the receiver.
+            email_code: The email verification code.
         """
-        employee: Employee = employees.get_employee_instance(user_id)
-        email_code: str = employees.compute_email_code(user_id)
         sender_email: str = self.EMAIL_ADDRESS
-        receiver_email: str = employee.employee_email
-        message: MIMEMultipart = MIMEMultipart()
-        message["From"] = sender_email
-        message["To"] = receiver_email
-        message["Subject"] = "Email Verification Code"
-        message.attach(
+        self.receiver_email: str = receiver_email
+        self.message["From"] = sender_email
+        self.message["To"] = receiver_email
+        self.message["Subject"] = "Email Verification Code"
+        self.message.attach(
             MIMEText(f"Your email verification code is {email_code}", "plain")
         )
-        self.message = message
 
-    def send_email(self, user_id: UUID, employees: Employees) -> None:
+
+class EmailClient:
+    """
+    An email client.
+
+    Attributes:
+        server_address: The address of the SMTP server.
+        port: The port of the SMTP server.
+        email_address: The email address of the sender.
+        password: The password of the email account.
+        server: The SMTP server connection.
+    """
+
+    def __init__(self):
+        self.server_address: str = os.getenv("SMTP_SERVER_ADDRESS")  # type: ignore
+        self.port: int = os.getenv("SMTP_PORT")  # type: ignore
+        self.email_address: str = os.getenv("SMTP_EMAIL_ADDRESS")  # type: ignore
+        self.password: str = os.getenv("SMTP_SERVER_PASSWORD")  # type: ignore
+        self.server: smtplib.SMTP_SSL | None = None
+        self.context = ssl.create_default_context()
+
+    def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
         """
-        Sends an email.
         Args:
-            user_id: The ID of the user.
+            message: The email message to send.
+            receiver_email: The recipient's email address.
         """
-        employee: Employee = employees.get_employee_instance(user_id)
-        sender_email: str = self.EMAIL_ADDRESS
-        receiver_email: str = employee.employee_email
-
-        context = ssl.create_default_context()
         with smtplib.SMTP_SSL(
-            self.SERVER_ADDRESS, self.PORT, context=context
+            self.server_address, self.port, context=self.context
         ) as server:
-            server.login(self.EMAIL_ADDRESS, self.PASSWORD)
-            server.sendmail(sender_email, receiver_email, self.message.as_string())
+            server.login(self.email_address, self.password)
+            server.sendmail(self.email_address, receiver_email, message.as_string())
 
 
 class PixelCode:
+    """
+    The PixelCode class.
+
+    Attributes:
+        employees: The employees manager.
+        email_client: The email client.
+    """
+
     def __init__(self):
         self.employees: Employees = Employees()
-        self.emails: Emails = Emails()
+        self.email_client: EmailClient = EmailClient()
 
     def create_qr_code(self, user_id: UUID) -> None:
         """
         Creates a QR code.
+
+        This method generates a QR code for the given user ID and saves it as a PNG file.
         Args:
             user_id: The ID of the user.
         """
@@ -176,5 +201,9 @@ class PixelCode:
         Args:
             user_id: The ID of the user.
         """
-        self.emails.create_email(user_id, self.employees)
-        self.emails.send_email(user_id, self.employees)
+        employee: Employee = self.employees.get_employee_instance(user_id)
+        email_code: str = self.employees.compute_email_code(user_id)
+        email: Email = Email()
+        email.create_email(employee.employee_email, email_code)
+        message = email.message
+        self.email_client.send_email(message, employee.employee_email)
