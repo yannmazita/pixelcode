@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 import smtplib
 import ssl
@@ -7,7 +6,6 @@ import qrcode
 from uuid import UUID
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
 
 from app.exceptions import NoEmployeeInstance
 
@@ -56,10 +54,9 @@ class Employees:
         Args:
             user_id: The ID of the user.
         """
-        try:
-            self.employees.pop(user_id)
-        except KeyError:
+        if user_id not in self.employees:
             raise NoEmployeeInstance(user_id)
+        self.employees.pop(user_id)
 
     def get_employee_instance(self, user_id: UUID) -> Employee:
         """
@@ -71,10 +68,9 @@ class Employees:
         Returns:
             The employee instance.
         """
-        try:
-            return self.employees[user_id]
-        except KeyError:
+        if user_id not in self.employees:
             raise NoEmployeeInstance(user_id)
+        return self.employees[user_id]
 
     def compute_email_code(self, user_id: UUID) -> str:
         """
@@ -115,7 +111,7 @@ class Email:
         message: The email message.
     """
 
-    EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
+    EMAIL_ADDRESS: str = os.getenv("SMTP_EMAIL_ADDRESS")  # type: ignore
 
     def __init__(self):
         self.message: MIMEMultipart = MIMEMultipart()
@@ -144,8 +140,6 @@ class EmailClient:
     """
     An email client.
 
-    This class is used to send emails using an SMTP server. It establishes a reusable SMTP connection.
-
     Attributes:
         server_address: The address of the SMTP server.
         port: The port of the SMTP server.
@@ -155,10 +149,10 @@ class EmailClient:
     """
 
     def __init__(self):
-        self.server_address: str = json.load(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
-        self.port: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
-        self.email_address: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
-        self.password: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
+        self.server_address: str = os.getenv("SMTP_SERVER_ADDRESS")  # type: ignore
+        self.port: int = os.getenv("SMTP_PORT")  # type: ignore
+        self.email_address: str = os.getenv("SMTP_EMAIL_ADDRESS")  # type: ignore
+        self.password: str = os.getenv("SMTP_SERVER_PASSWORD")  # type: ignore
         self.server: smtplib.SMTP_SSL | None = None
         self.context = ssl.create_default_context()
 
