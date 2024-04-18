@@ -11,23 +11,30 @@ class Token(BaseModel):
     access_token: str | None
     token_type: str | None
 
+
 class TokenData(SQLModel):
     username: str | None = None
     scopes: list[str] = []
 
+
 class AppUpdate(BaseModel):
-    pass
+    email_exists: bool | None = None
+    employee_id_exists: bool | None = None
+    email_code_validated: bool = False
+
 
 class AppError(BaseModel):
     error: str
 
-class AppStats(BaseModel):	
-    active_users: int	
+
+class AppStats(BaseModel):
+    active_users: int
 
 
-class WebsocketMessage(BaseModel):	
-    action: str	
+class WebsocketMessage(BaseModel):
+    action: str
     data: Token | AppError | AppStats | AppUpdate | None = None
+
 
 class UserBase(SQLModel):
     username: str = Field(unique=True)
