@@ -103,7 +103,27 @@ class Employees:
         return False
 
 
-class Emails:
+class Email:
+    EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
+
+    def __init__(self):
+        self.message: MIMEMultipart = MIMEMultipart()
+
+    def create_email(
+        self, user_id: UUID, employees: Employees, email_code: str
+    ) -> None:
+        employee: Employee = employees.get_employee_instance(user_id)
+        sender_email: str = self.EMAIL_ADDRESS
+        receiver_email: str = employee.employee_email
+        self.message["From"] = sender_email
+        self.message["To"] = receiver_email
+        self.message["Subject"] = "Email Verification Code"
+        self.message.attach(
+            MIMEText(f"Your email verification code is {email_code}", "plain")
+        )
+
+
+class EmailClient:
     PASSWORD: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
     PORT: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
     SERVER_ADDRESS: str = json.loads(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
@@ -127,28 +147,6 @@ class Emails:
             self.server.quit()
             self.server = None
 
-    def create_email(self, user_id: UUID, employees: Employees) -> MIMEMultipart:
-        """
-        Creates an email message.
-        Args:
-            user_id: The ID of the user.
-            employees: The Employees object managing employee data.
-        Returns:
-            A MIME Multipart email message object.
-        """
-        employee: Employee = employees.get_employee_instance(user_id)
-        email_code: str = employees.compute_email_code(user_id)
-        sender_email: str = self.EMAIL_ADDRESS
-        receiver_email: str = employee.employee_email
-        message: MIMEMultipart = MIMEMultipart()
-        message["From"] = sender_email
-        message["To"] = receiver_email
-        message["Subject"] = "Email Verification Code"
-        message.attach(
-            MIMEText(f"Your email verification code is {email_code}", "plain")
-        )
-        return message
-
     def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
         """
         Sends an email using a reusable SMTP connection.
@@ -165,7 +163,7 @@ class Emails:
 class PixelCode:
     def __init__(self):
         self.employees: Employees = Employees()
-        self.emails: Emails = Emails()
+        self.email_client: EmailClient = EmailClient()
 
     def create_qr_code(self, user_id: UUID) -> None:
         """
@@ -185,5 +183,8 @@ class PixelCode:
             user_id: The ID of the user.
         """
         employee: Employee = self.employees.get_employee_instance(user_id)
-        message = self.emails.create_email(user_id, self.employees)
-        self.emails.send_email(message, employee.employee_email)
+        email_code: str = self.employees.compute_email_code(user_id)
+        email: Email = Email()
+        email.create_email(user_id, self.employees, email_code)
+        message = email.message
+        self.email_client.send_email(message, employee.employee_email)
