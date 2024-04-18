@@ -1,15 +1,10 @@
-import asyncio
-import csv
 import hashlib
 import json
 import os
 import smtplib
 import ssl
 import qrcode
-import requests
 from uuid import UUID
-from email import encoders
-from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -115,13 +110,31 @@ class Emails:
     EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
 
     def __init__(self):
-        pass
+        self.server: smtplib.SMTP_SSL | None = None
 
-    def create_email(self, user_id: UUID, employees: Employees) -> None:
+    def connect(self):
+        """Establishes a reusable SMTP connection."""
+        if not self.server:
+            context = ssl.create_default_context()
+            self.server = smtplib.SMTP_SSL(
+                self.SERVER_ADDRESS, self.PORT, context=context
+            )
+            self.server.login(self.EMAIL_ADDRESS, self.PASSWORD)
+
+    def disconnect(self):
+        """Closes the SMTP connection."""
+        if self.server:
+            self.server.quit()
+            self.server = None
+
+    def create_email(self, user_id: UUID, employees: Employees) -> MIMEMultipart:
         """
-        Creates an email.
+        Creates an email message.
         Args:
             user_id: The ID of the user.
+            employees: The Employees object managing employee data.
+        Returns:
+            A MIME Multipart email message object.
         """
         employee: Employee = employees.get_employee_instance(user_id)
         email_code: str = employees.compute_email_code(user_id)
@@ -134,24 +147,19 @@ class Emails:
         message.attach(
             MIMEText(f"Your email verification code is {email_code}", "plain")
         )
-        self.message = message
+        return message
 
-    def send_email(self, user_id: UUID, employees: Employees) -> None:
+    def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
         """
-        Sends an email.
+        Sends an email using a reusable SMTP connection.
         Args:
-            user_id: The ID of the user.
+            message: The email message to send.
+            receiver_email: The recipient's email address.
         """
-        employee: Employee = employees.get_employee_instance(user_id)
-        sender_email: str = self.EMAIL_ADDRESS
-        receiver_email: str = employee.employee_email
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(
-            self.SERVER_ADDRESS, self.PORT, context=context
-        ) as server:
-            server.login(self.EMAIL_ADDRESS, self.PASSWORD)
-            server.sendmail(sender_email, receiver_email, self.message.as_string())
+        self.connect()
+        assert self.server is not None
+        self.server.sendmail(self.EMAIL_ADDRESS, receiver_email, message.as_string())
+        self.disconnect()
 
 
 class PixelCode:
@@ -176,5 +184,6 @@ class PixelCode:
         Args:
             user_id: The ID of the user.
         """
-        self.emails.create_email(user_id, self.employees)
-        self.emails.send_email(user_id, self.employees)
+        employee: Employee = self.employees.get_employee_instance(user_id)
+        message = self.emails.create_email(user_id, self.employees)
+        self.emails.send_email(message, employee.employee_email)
