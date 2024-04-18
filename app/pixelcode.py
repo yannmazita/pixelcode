@@ -109,12 +109,9 @@ class Email:
     def __init__(self):
         self.message: MIMEMultipart = MIMEMultipart()
 
-    def create_email(
-        self, user_id: UUID, employees: Employees, email_code: str
-    ) -> None:
-        employee: Employee = employees.get_employee_instance(user_id)
+    def create_email(self, receiver_email: str, email_code: str) -> None:
         sender_email: str = self.EMAIL_ADDRESS
-        receiver_email: str = employee.employee_email
+        self.receiver_email: str = receiver_email
         self.message["From"] = sender_email
         self.message["To"] = receiver_email
         self.message["Subject"] = "Email Verification Code"
@@ -124,12 +121,11 @@ class Email:
 
 
 class EmailClient:
-    PASSWORD: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
-    PORT: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
-    SERVER_ADDRESS: str = json.loads(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
-    EMAIL_ADDRESS: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
-
     def __init__(self):
+        self.server_address: str = json.load(os.getenv("SMTP_SERVER_ADDRESS"))  # type: ignore
+        self.port: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
+        self.email_address: str = json.loads(os.getenv("SMTP_EMAIL_ADDRESS"))  # type: ignore
+        self.password: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
         self.server: smtplib.SMTP_SSL | None = None
 
     def connect(self):
@@ -137,9 +133,9 @@ class EmailClient:
         if not self.server:
             context = ssl.create_default_context()
             self.server = smtplib.SMTP_SSL(
-                self.SERVER_ADDRESS, self.PORT, context=context
+                self.server_address, self.port, context=context
             )
-            self.server.login(self.EMAIL_ADDRESS, self.PASSWORD)
+            self.server.login(self.email_address, self.password)
 
     def disconnect(self):
         """Closes the SMTP connection."""
@@ -156,7 +152,7 @@ class EmailClient:
         """
         self.connect()
         assert self.server is not None
-        self.server.sendmail(self.EMAIL_ADDRESS, receiver_email, message.as_string())
+        self.server.sendmail(self.email_address, receiver_email, message.as_string())
         self.disconnect()
 
 
@@ -185,6 +181,6 @@ class PixelCode:
         employee: Employee = self.employees.get_employee_instance(user_id)
         email_code: str = self.employees.compute_email_code(user_id)
         email: Email = Email()
-        email.create_email(user_id, self.employees, email_code)
+        email.create_email(employee.employee_email, email_code)
         message = email.message
         self.email_client.send_email(message, employee.employee_email)
