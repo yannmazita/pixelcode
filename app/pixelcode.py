@@ -108,15 +108,6 @@ class Employees:
         return False
 
 
-class Email:
-    def __init__(self):
-        self.subject: str = ""
-        self.body: str = ""
-        self.sender_email: str = ""
-        self.receiver_email: str = ""
-        self.message: MIMEMultipart = MIMEMultipart()
-
-
 class Emails:
     PASSWORD: str = json.loads(os.getenv("SMTP_SERVER_PASSWORD"))  # type: ignore
     PORT: int = json.loads(os.getenv("SMTP_PORT"))  # type: ignore
@@ -152,7 +143,6 @@ class Emails:
             user_id: The ID of the user.
         """
         employee: Employee = employees.get_employee_instance(user_id)
-        email_code: str = employees.compute_email_code(user_id)
         sender_email: str = self.EMAIL_ADDRESS
         receiver_email: str = employee.employee_email
 
@@ -161,6 +151,7 @@ class Emails:
             self.SERVER_ADDRESS, self.PORT, context=context
         ) as server:
             server.login(self.EMAIL_ADDRESS, self.PASSWORD)
+            server.sendmail(sender_email, receiver_email, self.message.as_string())
 
 
 class PixelCode:
@@ -178,3 +169,12 @@ class PixelCode:
         code: str = employee.employee_code_in_database
         img = qrcode.make(code)
         img.save(f"app/static/qr_codes/{user_id}.png")
+
+    def generate_and_send_email(self, user_id: UUID) -> None:
+        """
+        Generates and sends an email.
+        Args:
+            user_id: The ID of the user.
+        """
+        self.emails.create_email(user_id, self.employees)
+        self.emails.send_email(user_id, self.employees)
