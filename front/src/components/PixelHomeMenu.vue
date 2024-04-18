@@ -1,0 +1,26 @@
+<template>
+    <menu id="pixel-home-menu-container">
+        <div id="pixel-home-menu" class="grid grid-flow-row">
+            <li id="pixel-home-menu-information-choice" class="flex justify-center m-5">
+                <AppButton @click="informationChoice" class="">{{ 'email/employee ID' }}</AppButton>
+            </li>
+            <li id="pixel-home-menu-code-choice" class="flex justify-center m-5">
+                <AppButton @click="codeChoide">{{ 'verification code' }}</AppButton>
+            </li>
+        </div>
+    </menu>
+</template>
+
+<script setup lang="ts">
+import AppButton from '@/components/AppButton.vue';
+import { useMenuStore } from '@/stores/menu.ts'
+
+const menuStore = useMenuStore();
+
+const informationChoice = (): void => {
+    menuStore.setInformationChoice(true);
+}
+const codeChoide = (): void => {
+    menuStore.setCodeChoice(true);
+}
+</script>
