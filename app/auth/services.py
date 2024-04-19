@@ -7,7 +7,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 
 from app.database import engine
-from app.models import User
+from app.users.models import User
 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -42,5 +42,5 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)    #type: ignore
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)  # type: ignore
     return encoded_jwt

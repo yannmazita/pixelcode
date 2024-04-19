@@ -12,8 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.auth import router as auth_routes
 from app.clients import router as client_routes
 from app.users import router as user_routes
+from app.users.models import create_fake_users, create_admin_user
 from .database import create_db_and_tables
-from .models import create_fake_users, create_admin_user
 
 
 ORIGINS: list = json.loads(os.getenv("ORIGINS"))  # type: ignore

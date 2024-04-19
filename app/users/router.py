@@ -10,7 +10,7 @@ from app.users.dependencies import (
     remove_user,
     remove_own_user,
 )
-from app.models import User, UserRead
+from app.users.models import User, UserRead
 
 router = APIRouter(
     prefix="/users",

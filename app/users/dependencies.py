@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 from app.auth.services import get_password_hash
 from app.database import engine
 from app.auth.dependencies import validate_token
-from app.dependencies.common import get_user_by_username
+from app.dependencies import get_user_by_username
 from app.auth.models import TokenData
 from app.users.models import User, UserCreate
 
