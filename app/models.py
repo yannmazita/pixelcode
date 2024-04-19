@@ -23,6 +23,11 @@ class AppUpdate(BaseModel):
     email_code_validated: bool = False
 
 
+class AppEmployeeInformation(BaseModel):
+    employee_id: str | None = None
+    employee_email: str | None = None
+
+
 class AppError(BaseModel):
     error: str
 

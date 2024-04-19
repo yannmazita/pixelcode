@@ -17,3 +17,10 @@ export interface Employee {
     employee_id: string | null,
     email: string | null,
 }
+
+export interface EmployeeStatus {
+    email_exists: boolean | null,
+    employee_id_exists: boolean | null,
+    email_code_sent: boolean,
+    email_code_validated: boolean,
+}
