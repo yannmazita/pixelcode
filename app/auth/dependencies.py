@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from pydantic import ValidationError
 
 from app.dependencies.common import get_user_by_username
-from app.models import TokenData
+from app.auth.models import TokenData
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
