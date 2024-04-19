@@ -28,8 +28,23 @@ export const usePixelStore = defineStore('pixel', () => {
         }
     }
 
+    async function sendEmailVerificationCode(code: number): Promise<void> {
+        try {
+            await clientStore.sendSocketMessage(JSON.stringify({
+                action: 'email_verification',
+                data: {
+                    email_code: code,
+                },
+            }));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+
     return {
         employeeStatus,
         sendEmployeeInformation,
+        sendEmailVerificationCode,
     }
 })

@@ -3,19 +3,8 @@ export interface TokenData {
     token_type: string | null,
 }
 
-export interface User {
-    id: string | null,
-    username: string | null,
-}
-
 export interface ServerStats {
     active_users: number,
-}
-
-export interface Employee {
-    id: string | null,
-    employee_id: string | null,
-    email: string | null,
 }
 
 export interface EmployeeStatus {
@@ -24,3 +13,4 @@ export interface EmployeeStatus {
     email_code_sent: boolean,
     email_code_validated: boolean,
 }
+
