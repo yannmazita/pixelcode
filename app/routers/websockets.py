@@ -1,6 +1,8 @@
 from uuid import UUID
+from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
+from app.pixelcode import PixelCode
 from app.models import (
     AppStats,
     AppError,
@@ -14,6 +16,7 @@ router = APIRouter(
 )
 
 client_connections: Connections = Connections()
+pixel_code: PixelCode = PixelCode()
 
 
 async def verify_websocket_token(websocket: WebSocket) -> None:
@@ -83,6 +86,38 @@ async def validate_message(
         return None
 
 
+async def process_employee_info(client_id: UUID, message: WebsocketMessage) -> None:
+    """
+    Processes the employee information.
+    This function processes the employee information and sends it back to the client.
+    Args:
+        client_id: The id of the client.
+        message: The message containing the employee information.
+    """
+    try:
+        pass
+    except ValidationError as e:
+        error: AppError = AppError(error=str(e))
+        error_message = WebsocketMessage(action="error", data=error)
+        await client_connections.send(client_id, error_message)
+
+
+async def verify_email_code(client_id: UUID, message: WebsocketMessage) -> None:
+    """
+    Verifies the email code.
+    This function verifies the email code sent by the client.
+    Args:
+        client_id: The id of the client.
+        message: The message containing the email code.
+    """
+    try:
+        pass
+    except ValidationError as e:
+        error: AppError = AppError(error=str(e))
+        error_message = WebsocketMessage(action="error", data=error)
+        await client_connections.send(client_id, error_message)
+
+
 @router.websocket("/client")
 async def client_endpoint(websocket: WebSocket, client_id: UUID):
     await websocket.accept()  # Accept the websocket connection
@@ -99,14 +134,9 @@ async def client_endpoint(websocket: WebSocket, client_id: UUID):
             else:
                 action: str = message.action
 
-                if action == "server_stats":
-                    stats: AppStats = AppStats(
-                        active_users=client_connections.get_number_of_connections()
-                    )
-                    stats_message: WebsocketMessage = WebsocketMessage(
-                        action="server_stats", data=stats
-                    )
-                    await client_connections.send(client_id, stats_message)
-
+                if action == "employee_info":
+                    pass
+                if action == "email_verification":
+                    pass
     except WebSocketDisconnect:
         await on_client_disconnect(websocket, client_id)
