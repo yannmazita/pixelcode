@@ -5,15 +5,16 @@ from fastapi import Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 
-from app.authentication import get_password_hash
+from app.auth.services import get_password_hash
 from app.database import engine
-from app.dependencies.tokens import validate_token
-from app.dependencies.common import get_user_by_username
-from app.models import User, UserCreate, TokenData
+from app.auth.dependencies import validate_token
+from app.dependencies import get_user_by_username
+from app.auth.models import TokenData
+from app.users.models import User, UserCreate
 
 
 async def get_own_user(
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["user:own"])]
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["user:own"])],
 ) -> User:
     """Get own user.
     Args:

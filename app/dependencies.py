@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from sqlalchemy.exc import NoResultFound
 
 from app.database import engine
-from app.models import User
+from app.users.models import User
 
 
 async def get_user_by_username(username: str) -> User:
