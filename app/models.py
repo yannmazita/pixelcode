@@ -23,6 +23,15 @@ class AppUpdate(BaseModel):
     email_code_validated: bool = False
 
 
+class AppEmployeeInformation(BaseModel):
+    employee_id: str | None = None
+    employee_email: str | None = None
+
+
+class AppEmailCode(BaseModel):
+    email_code: int
+
+
 class AppError(BaseModel):
     error: str
 
@@ -33,7 +42,9 @@ class AppStats(BaseModel):
 
 class WebsocketMessage(BaseModel):
     action: str
-    data: Token | AppError | AppStats | AppUpdate | None = None
+    data: Token | AppError | AppStats | AppUpdate | AppEmployeeInformation | AppEmailCode | None = (
+        None
+    )
 
 
 class UserBase(SQLModel):
