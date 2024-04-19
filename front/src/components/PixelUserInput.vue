@@ -15,8 +15,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user.js';
-import { useMenuStore } from '@/stores/menu.js';
+import { useClientStore } from '@/stores/client.ts';
+import { useMenuStore } from '@/stores/menu.ts';
 import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/yup';
@@ -25,7 +25,7 @@ import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
 import Keyboard from '@/components/AppVisualKeyboard.vue'
 
-const userStore = useUserStore();
+const clientStore = useClientStore();
 const menuStore = useMenuStore();
 
 const schema = toTypedSchema(
@@ -40,12 +40,12 @@ const [userInput] = defineField('userInput');
 
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
     const message = JSON.stringify({
-        action: 'guess_letter',
+        action: 'yet_to_be_defined',
         data: {
             letter: values.userInput.toLowerCase(),
         },
     });
-    userStore.sendSocketMessage(message);
+    clientStore.sendSocketMessage(message);
     resetForm();
 });
 

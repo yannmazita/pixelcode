@@ -14,7 +14,6 @@ router = APIRouter(
 )
 
 client_connections: Connections = Connections()
-user_connections: Connections = Connections()
 
 
 async def verify_websocket_token(websocket: WebSocket) -> None:
@@ -33,27 +32,6 @@ async def verify_websocket_token(websocket: WebSocket) -> None:
     except ValidationError:
         await websocket.close()
         print("Invalid token format.")
-
-
-async def on_user_connect(websocket: WebSocket, user_id: UUID) -> None:
-    """
-    Handles actions when a websocket is connected.
-    Args:
-        websocket: The websocket to connect.
-        user_id: The id of the user.
-    """
-    user_connections.connect(websocket, user_id)
-    await verify_websocket_token(websocket)
-
-
-async def on_user_disconnect(websocket: WebSocket, user_id: UUID) -> None:
-    """
-    Handles actions when a websocket is disconnected.
-    Args:
-        websocket: The websocket to disconnect.
-        user_id: The id of the user.
-    """
-    user_connections.disconnect(user_id)
 
 
 async def on_client_connect(websocket: WebSocket, client_id: UUID) -> None:
@@ -82,17 +60,6 @@ async def on_client_disconnect(websocket: WebSocket, client_id: UUID) -> None:
     await client_connections.broadcast(stats_message)
 
 
-async def send_server_stats(user_id: UUID) -> None:
-    """
-    Sends server stats to the user.
-    Args:
-        user_id: The id of the user.
-    """
-    stats = AppStats(active_users=user_connections.get_number_of_connections())
-    stats_message = WebsocketMessage(action="server_stats", data=stats)
-    await user_connections.send(user_id, stats_message)
-
-
 async def validate_message(
     websocket: WebSocket, id: UUID, connections: Connections
 ) -> WebsocketMessage | None:
@@ -114,29 +81,6 @@ async def validate_message(
         error_message = WebsocketMessage(action="error", data=error)
         await connections.send(id, error_message)
         return None
-
-
-@router.websocket("/user")
-async def user_endpoint(websocket: WebSocket, user_id: UUID):
-    await websocket.accept()  # Accept the websocket connection
-
-    try:
-        await on_user_connect(websocket, user_id)
-
-        while True:
-            message: WebsocketMessage | None = await validate_message(
-                websocket, user_id, user_connections
-            )
-            if message is None:
-                continue
-            else:
-                action: str = message.action
-
-                if action == "server_stats":
-                    await send_server_stats(user_id)
-
-    except WebSocketDisconnect:
-        await on_user_disconnect(websocket, user_id)
 
 
 @router.websocket("/client")
