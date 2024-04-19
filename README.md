@@ -72,4 +72,5 @@ uvicorn app.main:api --reload
 - Backend: Cleanup pixelcode error handling
 - Backend: Printing to Star Micronics SK1-31
 - Backend: Cleanup qr codes once they are printed
+- Backend: Upgrade employee data save to PostgreSQL database
 - Cleanup usage of environment variables
