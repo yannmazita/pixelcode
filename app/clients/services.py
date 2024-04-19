@@ -1,22 +1,12 @@
 from uuid import UUID
-from typing import Any
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import WebSocket
 from pydantic import ValidationError
-from app.pixelcode import PixelCode
-from app.models import (
+from app.clients.utils import Connections
+from app.clients.models import (
     AppStats,
     AppError,
     WebsocketMessage,
 )
-from app.websockets import Connections
-
-router = APIRouter(
-    prefix="/ws",
-    tags=["ws"],
-)
-
-client_connections: Connections = Connections()
-pixel_code: PixelCode = PixelCode()
 
 
 async def verify_websocket_token(websocket: WebSocket) -> None:
@@ -37,10 +27,13 @@ async def verify_websocket_token(websocket: WebSocket) -> None:
         print("Invalid token format.")
 
 
-async def on_client_connect(websocket: WebSocket, client_id: UUID) -> None:
+async def on_client_connect(
+    client_connections: Connections, websocket: WebSocket, client_id: UUID
+) -> None:
     """
     Handles actions when a websocket is connected.
     Args:
+        client_connections: The object that holds the websocket connections.
         websocket: The websocket to connect.
         client_id: The id of the client.
     """
@@ -50,10 +43,13 @@ async def on_client_connect(websocket: WebSocket, client_id: UUID) -> None:
     await client_connections.broadcast(stats_message)
 
 
-async def on_client_disconnect(websocket: WebSocket, client_id: UUID) -> None:
+async def on_client_disconnect(
+    client_connections: Connections, websocket: WebSocket, client_id: UUID
+) -> None:
     """
     Handles actions when a websocket is disconnected.
     Args:
+        client_connections: The object that holds the websocket connections.
         websocket: The websocket to disconnect.
         client_id: The id of the client.
     """
@@ -86,11 +82,14 @@ async def validate_message(
         return None
 
 
-async def process_employee_info(client_id: UUID, message: WebsocketMessage) -> None:
+async def process_employee_info(
+    client_connections: Connections, client_id: UUID, message: WebsocketMessage
+) -> None:
     """
     Processes the employee information.
     This function processes the employee information and sends it back to the client.
     Args:
+        client_connections: The object that holds the websocket connections.
         client_id: The id of the client.
         message: The message containing the employee information.
     """
@@ -102,11 +101,14 @@ async def process_employee_info(client_id: UUID, message: WebsocketMessage) -> N
         await client_connections.send(client_id, error_message)
 
 
-async def verify_email_code(client_id: UUID, message: WebsocketMessage) -> None:
+async def verify_email_code(
+    client_connections: Connections, client_id: UUID, message: WebsocketMessage
+) -> None:
     """
     Verifies the email code.
     This function verifies the email code sent by the client.
     Args:
+        client_connections: The object that holds the websocket connections.
         client_id: The id of the client.
         message: The message containing the email code.
     """
@@ -116,27 +118,3 @@ async def verify_email_code(client_id: UUID, message: WebsocketMessage) -> None:
         error: AppError = AppError(error=str(e))
         error_message = WebsocketMessage(action="error", data=error)
         await client_connections.send(client_id, error_message)
-
-
-@router.websocket("/client")
-async def client_endpoint(websocket: WebSocket, client_id: UUID):
-    await websocket.accept()  # Accept the websocket connection
-
-    try:
-        await on_client_connect(websocket, client_id)
-
-        while True:
-            message: WebsocketMessage | None = await validate_message(
-                websocket, client_id, client_connections
-            )
-            if message is None:
-                continue
-            else:
-                action: str = message.action
-
-                if action == "employee_info":
-                    pass
-                if action == "email_verification":
-                    pass
-    except WebSocketDisconnect:
-        await on_client_disconnect(websocket, client_id)

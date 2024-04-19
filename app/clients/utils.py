@@ -2,8 +2,7 @@ import json
 from uuid import UUID
 from fastapi import WebSocket
 from fastapi.encoders import jsonable_encoder
-
-from app.models import WebsocketMessage
+from app.clients.models import WebsocketMessage
 
 
 class Connection:

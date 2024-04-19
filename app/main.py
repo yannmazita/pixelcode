@@ -10,7 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import router as auth_routes
-from .routers import users, websockets
+from app.clients import router as client_routes
+from .routers import users
 from .database import create_db_and_tables
 from .models import create_fake_users, create_admin_user
 
@@ -37,7 +38,7 @@ api.add_middleware(
 )
 api.include_router(auth_routes.router)
 api.include_router(users.router)
-api.include_router(websockets.router)
+api.include_router(client_routes.router)
 
 
 def start_server():
