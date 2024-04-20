@@ -11,9 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import router as auth_routes
 from app.clients import router as client_routes
+from app.employees import router as employee_routes
+from app.employees.utils import add_fake_employee, add_fake_employee_state
 from app.users import router as user_routes
-from app.users.models import create_fake_users, create_admin_user
-from .database import create_db_and_tables
+from app.users.utils import create_fake_users, create_admin_user
+from app.database import create_db_and_tables
 
 
 ORIGINS: list = json.loads(os.getenv("ORIGINS"))  # type: ignore
@@ -22,8 +24,10 @@ ORIGINS: list = json.loads(os.getenv("ORIGINS"))  # type: ignore
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
-    create_admin_user()
+    add_fake_employee()
+    add_fake_employee_state()
     create_fake_users()
+    create_admin_user()
     yield
 
 
@@ -37,8 +41,9 @@ api.add_middleware(
     allow_headers=["*"],
 )
 api.include_router(auth_routes.router)
-api.include_router(user_routes.router)
 api.include_router(client_routes.router)
+api.include_router(employee_routes.router)
+api.include_router(user_routes.router)
 
 
 def start_server():
