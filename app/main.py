@@ -10,7 +10,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import router as auth_routes
-from app.clients import router as client_routes
 from app.employees import router as employee_routes
 from app.employees.utils import add_fake_employee, add_fake_employee_state
 from app.users import router as user_routes
@@ -41,7 +40,6 @@ api.add_middleware(
     allow_headers=["*"],
 )
 api.include_router(auth_routes.router)
-api.include_router(client_routes.router)
 api.include_router(employee_routes.router)
 api.include_router(user_routes.router)
 
