@@ -11,11 +11,30 @@ from app.database import engine
 
 
 class EmployeeAdminService:
+    """
+    Service class for employee-related operations for admin users.
+
+    This class provides methods to interact with the database and perform operations on employees for admin users.
+
+    Attributes:
+        session: The database session to be used for operations.
+    """
+
     def __init__(self, session: Session):
         self.session = session
 
 
 class EmployeeService:
+    """
+    Service class for employee-related operations.
+
+    This class provides methods to interact with the database and perform operations on employees.
+
+    Attributes:
+        session: The database session to be used for operations.
+        email_service: The email service to be used for sending emails.
+    """
+
     def __init__(self, session: Session, email_service: EmailService):
         self.session = session
         self.email_service = email_service
@@ -43,6 +62,14 @@ class EmployeeService:
     def get_employee_identity_by_employee_id(
         self, employee_id: str
     ) -> EmployeeIdentity:
+        """
+        Retrieve an employee's identity information from the database using their employee ID.
+
+        Args:
+            employee_id: The employee ID of the employee.
+        Returns:
+            The employee's identity information.
+        """
         try:
             employee = self.session.exec(
                 select(EmployeeIdentity).where(
@@ -57,6 +84,14 @@ class EmployeeService:
             )
 
     def get_employee_identity_by_email(self, email: str) -> EmployeeIdentity:
+        """
+        Retrieve an employee's identity information from the database using their email.
+
+        Args:
+            email: The email of the employee.
+        Returns:
+            The employee's identity information.
+        """
         try:
             employee = self.session.exec(
                 select(EmployeeIdentity).where(EmployeeIdentity.employee_email == email)
@@ -71,6 +106,11 @@ class EmployeeService:
     def get_employee_state(self, employee: EmployeeIdentity) -> EmployeeState:
         """
         Retrieve an employee's state information from the database.
+
+        Args:
+            employee: The employee whose state information is to be retrieved.
+        Returns:
+            The employee's state information.
         """
         try:
             state = self.session.exec(
@@ -85,7 +125,11 @@ class EmployeeService:
 
     def compute_email_code(self, employee: EmployeeIdentity) -> str:
         """
-        Compute the email verification code using the employee's code in the database.
+        Compute the email verification code for the given employee.
+        Args:
+            employee: The employee for which the code is to be computed.
+        Returns:
+            The computed email code.
         """
         state = self.get_employee_state(employee)
         prefix = state.employee_code_in_database[-2:]
@@ -95,7 +139,9 @@ class EmployeeService:
 
     def generate_and_send_email(self, employee: EmployeeIdentity) -> None:
         """
-        Generate an email verification code and send it to the employee's email.
+        Generates an email code for the given employee and sends it to their email address.
+        Args:
+            employee: The employee to whom the email is to be sent.
         """
         email_code = self.compute_email_code(employee)
         email_message = self.email_service.create_email(
@@ -118,19 +164,28 @@ class EmployeeService:
 
     def create_qr_code(self, employee: EmployeeIdentity) -> str:
         """
-        Generates a QR code for the given employee ID and saves it as a PNG file.
+        Creates a QR code for the given employee.
+        Args:
+            employee: The employee for whom the QR code is to be created.
+        Returns:
+            The path to the created QR code.
         """
         state = self.get_employee_state(employee)
         if not state.email_code_validated:
             raise ValueError("Email code not validated for employee.")
         img = qrcode.make(employee.employee_code)
-        qr_code_path = f"app/static/qr_codes/{id}.png"
+        qr_code_path = f"app/static/qr_codes/{employee.employee_id}.png"
         img.save(qr_code_path)
         return qr_code_path
 
     def validate_email_code(self, employee: EmployeeIdentity, input_code: str) -> bool:
         """
-        Validates the input email code against the computed one, updating the employee's state.
+        Validates the email code entered by the employee.
+        Args:
+            employee: The employee for whom the email code is to be validated.
+            input_code: The email code entered by the employee.
+        Returns:
+            True if the email code is valid, False otherwise.
         """
         expected_code = self.compute_email_code(employee)
         state = self.get_employee_state(employee)
