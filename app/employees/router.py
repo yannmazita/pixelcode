@@ -56,7 +56,7 @@ async def create_employee(
         )
 
 
-@router.get("/id={id}", response_model=EmployeeRead)
+@router.get("/id/{id}", response_model=EmployeeRead)
 async def get_employee_by_id(
     id: UUID,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
@@ -76,7 +76,7 @@ async def get_employee_by_id(
         )
 
 
-@router.get("/internal_id={internal_id}", response_model=EmployeeRead)
+@router.get("/internal_id/{internal_id}", response_model=EmployeeRead)
 async def get_employee_by_internal_id(
     internal_id: str,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
@@ -96,7 +96,7 @@ async def get_employee_by_internal_id(
         )
 
 
-@router.get("/email={email}", response_model=EmployeeRead)
+@router.get("/email/{email}", response_model=EmployeeRead)
 async def get_employee_by_email(
     email: EmailStr,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
