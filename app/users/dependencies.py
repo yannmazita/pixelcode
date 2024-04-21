@@ -1,5 +1,5 @@
 from typing import Annotated
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound
@@ -33,7 +33,7 @@ async def get_own_user(
 
 
 async def create_new_user(
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["user.create"])],
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
     user: UserCreate,
 ) -> User:
     """Create new user.
@@ -43,11 +43,11 @@ async def create_new_user(
     Returns:
         A User instance representing the created user.
     """
-    if token_data.username != user.username:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username in token and body do not match",
-        )
+   # if token_data.username != user.username:
+   #     raise HTTPException(
+   #         status_code=status.HTTP_400_BAD_REQUEST,
+   #         detail="Username in token and body do not match",
+   #     )
 
     with Session(engine) as session:
         try:
@@ -60,7 +60,7 @@ async def create_new_user(
         except NoResultFound:
             pass
     hashed_password: str = get_password_hash(user.password)
-    new_user = User(username=user.username, hashed_password=hashed_password)
+    new_user = User(id=uuid4(), username=user.username, hashed_password=hashed_password)
     db_user = User.model_validate(new_user)
     with Session(engine) as session:
         session.add(db_user)

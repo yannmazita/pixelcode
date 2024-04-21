@@ -1,13 +1,17 @@
 import hashlib
 from fastapi import HTTPException, status
 import qrcode
-from uuid import UUID
+from uuid import UUID, uuid4
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.employees.models import EmployeeIdentity, EmployeeState
+from app.employees.models import Employee, EmployeeCreate, EmployeeState
 from app.emails.services import EmailService
-from app.database import engine
+
+
+class EmployeeServiceBase:
+    def __init__(self, session: Session):
+        self.session = session
 
 
 class EmployeeAdminService:
@@ -22,6 +26,72 @@ class EmployeeAdminService:
 
     def __init__(self, session: Session):
         self.session = session
+
+    def create_new_employee(self, employee: EmployeeCreate) -> Employee:
+        """
+        Create a new employee in the database.
+        Args:
+            employee: The employee to be created.
+        Returns:
+            The created employee.
+        """
+        try:
+            self.session.exec(
+                select(Employee).where(Employee.internal_id == employee.internal_id)
+            ).one()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Employee with given ID already exists",
+            )
+        except NoResultFound:
+            pass
+
+        new_employee: Employee = Employee(
+            id=uuid4(),
+            internal_id=employee.internal_id,
+            email=employee.email,
+            code_to_print=employee.code_to_print,
+            surname=employee.surname,
+            firstname=employee.firstname,
+        )
+        db_employee = Employee.model_validate(new_employee)
+
+        self.session.add(db_employee)
+        self.session.commit()
+
+        return db_employee
+
+    def get_employees(self, offset: int = 0, limit: int = 100):
+        employees = self.session.exec(
+            select(Employee).offset(offset).limit(limit)
+        ).all()
+        return employees
+
+    def get_employee_by_id(self, id: UUID) -> Employee:
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def remove_employee_by_id(self, id: UUID) -> Employee:
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            self.session.delete(employee)
+            self.session.commit()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
 
 
 class EmployeeService:
@@ -39,7 +109,7 @@ class EmployeeService:
         self.session = session
         self.email_service = email_service
 
-    def get_employee_identity(self, id: UUID) -> EmployeeIdentity:
+    def get_employee(self, id: UUID) -> Employee:
         """
         Retrieve an employee's identity information from the database.
 
@@ -50,7 +120,7 @@ class EmployeeService:
         """
         try:
             employee = self.session.exec(
-                select(EmployeeIdentity).where(EmployeeIdentity.id == id)
+                select(Employee).where(Employee.id == id)
             ).one()
             return employee
         except NoResultFound:
@@ -59,22 +129,18 @@ class EmployeeService:
                 detail="Employee does not exist",
             )
 
-    def get_employee_identity_by_employee_id(
-        self, employee_id: str
-    ) -> EmployeeIdentity:
+    def get_employee_by_internal_id(self, internal_id: str) -> Employee:
         """
         Retrieve an employee's identity information from the database using their employee ID.
 
         Args:
-            employee_id: The employee ID of the employee.
+            internal_id: The employee ID of the employee.
         Returns:
             The employee's identity information.
         """
         try:
             employee = self.session.exec(
-                select(EmployeeIdentity).where(
-                    EmployeeIdentity.employee_id == employee_id
-                )
+                select(Employee).where(Employee.internal_id == internal_id)
             ).one()
             return employee
         except NoResultFound:
@@ -83,7 +149,7 @@ class EmployeeService:
                 detail="Employee with given ID does not exist",
             )
 
-    def get_employee_identity_by_email(self, email: str) -> EmployeeIdentity:
+    def get_employee_by_email(self, email: str) -> Employee:
         """
         Retrieve an employee's identity information from the database using their email.
 
@@ -94,7 +160,7 @@ class EmployeeService:
         """
         try:
             employee = self.session.exec(
-                select(EmployeeIdentity).where(EmployeeIdentity.employee_email == email)
+                select(Employee).where(Employee.email == email)
             ).one()
             return employee
         except NoResultFound:
@@ -103,7 +169,7 @@ class EmployeeService:
                 detail="Employee with given email does not exist",
             )
 
-    def get_employee_state(self, employee: EmployeeIdentity) -> EmployeeState:
+    def get_employee_state(self, employee: Employee) -> EmployeeState:
         """
         Retrieve an employee's state information from the database.
 
@@ -114,7 +180,7 @@ class EmployeeService:
         """
         try:
             state = self.session.exec(
-                select(EmployeeState).where(EmployeeState.id == employee.id)
+                select(EmployeeState).where(EmployeeState.internal_id == employee.internal_id)
             ).one()
             return state
         except NoResultFound:
@@ -123,7 +189,7 @@ class EmployeeService:
                 detail=f"No state found for employee ID: {id}",
             )
 
-    def compute_email_code(self, employee: EmployeeIdentity) -> str:
+    def compute_email_code(self, employee: Employee) -> str:
         """
         Compute the email verification code for the given employee.
         Args:
@@ -132,12 +198,12 @@ class EmployeeService:
             The computed email code.
         """
         state = self.get_employee_state(employee)
-        prefix = state.employee_code_in_database[-2:]
-        suffix = state.employee_code_in_database[-4:]
+        prefix = state.code_to_print[-2:]
+        suffix = state.code_to_print[-4:]
         email_code = prefix + hashlib.sha256(suffix.encode()).hexdigest()
         return email_code
 
-    def generate_and_send_email(self, employee: EmployeeIdentity) -> None:
+    def generate_and_send_email(self, employee: Employee) -> None:
         """
         Generates an email code for the given employee and sends it to their email address.
         Args:
@@ -145,24 +211,23 @@ class EmployeeService:
         """
         email_code = self.compute_email_code(employee)
         email_message = self.email_service.create_email(
-            employee.employee_email, email_code
+            employee.email, email_code
         )
-        self.email_service.send_email(email_message, employee.employee_email)
+        self.email_service.send_email(email_message, employee.email)
         state = self.get_employee_state(employee)
         state.email_code_sent = True
 
-        with Session(engine) as session:
-            session.add(state)
-            try:
-                session.commit()
-            except IntegrityError:
-                session.rollback()
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to update employee state",
-                )
+        self.session.add(state)
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update employee state",
+            )
 
-    def create_qr_code(self, employee: EmployeeIdentity) -> str:
+    def create_qr_code(self, employee: Employee) -> str:
         """
         Creates a QR code for the given employee.
         Args:
@@ -173,12 +238,12 @@ class EmployeeService:
         state = self.get_employee_state(employee)
         if not state.email_code_validated:
             raise ValueError("Email code not validated for employee.")
-        img = qrcode.make(employee.employee_code)
-        qr_code_path = f"app/static/qr_codes/{employee.employee_id}.png"
+        img = qrcode.make(employee.code_to_print)
+        qr_code_path = f"app/static/qr_codes/{employee.internal_id}.png"
         img.save(qr_code_path)
         return qr_code_path
 
-    def validate_email_code(self, employee: EmployeeIdentity, input_code: str) -> bool:
+    def validate_email_code(self, employee: Employee, input_code: str) -> bool:
         """
         Validates the email code entered by the employee.
         Args:
@@ -191,15 +256,14 @@ class EmployeeService:
         state = self.get_employee_state(employee)
         if input_code == expected_code:
             state.email_code_validated = True
-            with Session(engine) as session:
-                session.add(state)
-                try:
-                    session.commit()
-                except IntegrityError:
-                    session.rollback()
-                    raise HTTPException(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="Failed to update employee state",
-                    )
+            self.session.add(state)
+            try:
+                self.session.commit()
+            except IntegrityError:
+                self.session.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update employee state",
+                )
             return True
         return False
