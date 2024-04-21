@@ -1,11 +1,16 @@
 import hashlib
 from fastapi import HTTPException, status
+from pydantic import EmailStr
 import qrcode
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.employees.models import Employee, EmployeeCreate, EmployeeState
+from app.employees.models import (
+    Employee,
+    EmployeeCreate,
+    EmployeeState,
+)
 from app.emails.services import EmailService
 
 
@@ -149,7 +154,7 @@ class EmployeeService:
                 detail="Employee with given ID does not exist",
             )
 
-    def get_employee_by_email(self, email: str) -> Employee:
+    def get_employee_by_email(self, email: EmailStr | None) -> Employee:
         """
         Retrieve an employee's identity information from the database using their email.
 
@@ -180,7 +185,9 @@ class EmployeeService:
         """
         try:
             state = self.session.exec(
-                select(EmployeeState).where(EmployeeState.internal_id == employee.internal_id)
+                select(EmployeeState).where(
+                    EmployeeState.internal_id == employee.internal_id
+                )
             ).one()
             return state
         except NoResultFound:
@@ -203,16 +210,14 @@ class EmployeeService:
         email_code = prefix + hashlib.sha256(suffix.encode()).hexdigest()
         return email_code
 
-    def generate_and_send_email(self, employee: Employee) -> None:
+    def generate_and_send_email(self, employee: Employee) -> EmployeeState:
         """
         Generates an email code for the given employee and sends it to their email address.
         Args:
             employee: The employee to whom the email is to be sent.
         """
         email_code = self.compute_email_code(employee)
-        email_message = self.email_service.create_email(
-            employee.email, email_code
-        )
+        email_message = self.email_service.create_email(employee.email, email_code)
         self.email_service.send_email(email_message, employee.email)
         state = self.get_employee_state(employee)
         state.email_code_sent = True
@@ -226,6 +231,7 @@ class EmployeeService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update employee state",
             )
+        return state
 
     def create_qr_code(self, employee: Employee) -> str:
         """

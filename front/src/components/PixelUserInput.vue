@@ -6,7 +6,8 @@
                 <div class="text-4xl">❌</div>
             </div>
             <div class="flex justify-center">
-                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys" :additionalRows="otherRows"></Keyboard>
+                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
+                    :additionalRows="otherRows"></Keyboard>
             </div>
             <div class="flex justify-center">
                 <AppButton :disabled="isSubmitting" type="submit" class="btn btn-primary">{{ 'Submit' }}</AppButton>
@@ -15,8 +16,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { useClientStore } from '@/stores/client.ts';
 import { useMenuStore } from '@/stores/menu.ts';
+import { usePixelStore } from '@/stores/pixel.ts';
 import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/yup';
@@ -25,8 +26,8 @@ import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
 import Keyboard from '@/components/AppVisualKeyboard.vue'
 
-const clientStore = useClientStore();
 const menuStore = useMenuStore();
+const pixelStore = usePixelStore();
 
 const schema = toTypedSchema(
     object({
@@ -39,13 +40,18 @@ const { handleSubmit, isSubmitting, defineField } = useForm({
 const [userInput] = defineField('userInput');
 
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
-    const message = JSON.stringify({
-        action: 'yet_to_be_defined',
-        data: {
-            letter: values.userInput.toLowerCase(),
-        },
-    });
-    clientStore.sendSocketMessage(message);
+    if (menuStore.identifierEmailChoice) {
+        await pixelStore.sendEmployeeIdentifier({
+            internal_id: null,
+            email: values.userInput.toLowerCase(),
+        });
+    } else if (menuStore.identifierIdChoice) {
+        await pixelStore.sendEmployeeIdentifier({
+            internal_id: values.userInput,
+            email: null,
+        });
+    }
+
     resetForm();
 });
 

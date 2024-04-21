@@ -10,20 +10,4 @@
 
 <script setup lang="ts">
 import NavBar from '@/components/AppNavBar.vue'
-import { onMounted } from 'vue';
-import { useClientStore } from '@/stores/client.ts';
-
-const clientStore = useClientStore();
-
-onMounted(async () => {
-    try {
-        await clientStore.connectSocket();
-        await clientStore.sendSocketMessage(JSON.stringify({
-            action: 'server_stats',
-            data: null
-        }));
-    } catch (error) {
-        console.log(error)
-    }
-});
 </script>

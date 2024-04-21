@@ -72,7 +72,6 @@ export const useAuthenticationStore = defineStore('authentication', () => {
             tokenData.token_type = null;
             user.id = null;
             user.username = null;
-            user.player_id = null;
             authenticated.value = false;
         }
         catch (error) {
