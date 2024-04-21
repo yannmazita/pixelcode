@@ -18,102 +18,6 @@ class EmployeeServiceBase:
     def __init__(self, session: Session):
         self.session = session
 
-
-class EmployeeAdminService:
-    """
-    Service class for employee-related operations for admin users.
-
-    This class provides methods to interact with the database and perform operations on employees for admin users.
-
-    Attributes:
-        session: The database session to be used for operations.
-    """
-
-    def __init__(self, session: Session):
-        self.session = session
-
-    def create_new_employee(self, employee: EmployeeCreate) -> Employee:
-        """
-        Create a new employee in the database.
-        Args:
-            employee: The employee to be created.
-        Returns:
-            The created employee.
-        """
-        try:
-            self.session.exec(
-                select(Employee).where(Employee.internal_id == employee.internal_id)
-            ).one()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Employee with given ID already exists",
-            )
-        except NoResultFound:
-            pass
-
-        new_employee: Employee = Employee(
-            id=uuid4(),
-            internal_id=employee.internal_id,
-            email=employee.email,
-            code_to_print=employee.code_to_print,
-            surname=employee.surname,
-            firstname=employee.firstname,
-        )
-        db_employee = Employee.model_validate(new_employee)
-
-        self.session.add(db_employee)
-        self.session.commit()
-
-        return db_employee
-
-    def get_employees(self, offset: int = 0, limit: int = 100):
-        employees = self.session.exec(
-            select(Employee).offset(offset).limit(limit)
-        ).all()
-        return employees
-
-    def get_employee_by_id(self, id: UUID) -> Employee:
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def remove_employee_by_id(self, id: UUID) -> Employee:
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            self.session.delete(employee)
-            self.session.commit()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-
-class EmployeeService:
-    """
-    Service class for employee-related operations.
-
-    This class provides methods to interact with the database and perform operations on employees.
-
-    Attributes:
-        session: The database session to be used for operations.
-        email_service: The email service to be used for sending emails.
-    """
-
-    def __init__(self, session: Session, email_service: EmailService):
-        self.session = session
-        self.email_service = email_service
-
     def get_employee(self, id: UUID) -> Employee:
         """
         Retrieve an employee's identity information from the database.
@@ -195,6 +99,104 @@ class EmployeeService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"No state found for employee ID: {id}",
             )
+
+
+
+class EmployeeAdminService(EmployeeServiceBase):
+    """
+    Service class for employee-related operations for admin users.
+
+    This class provides methods to interact with the database and perform operations on employees for admin users.
+
+    Attributes:
+        session: The database session to be used for operations.
+    """
+
+    def __init__(self, session: Session):
+        super().__init__(session)
+
+    def create_new_employee(self, employee: EmployeeCreate) -> Employee:
+        """
+        Create a new employee in the database.
+        Args:
+            employee: The employee to be created.
+        Returns:
+            The created employee.
+        """
+        try:
+            self.session.exec(
+                select(Employee).where(Employee.internal_id == employee.internal_id)
+            ).one()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Employee with given ID already exists",
+            )
+        except NoResultFound:
+            pass
+
+        new_employee: Employee = Employee(
+            id=uuid4(),
+            internal_id=employee.internal_id,
+            email=employee.email,
+            code_to_print=employee.code_to_print,
+            surname=employee.surname,
+            firstname=employee.firstname,
+        )
+        db_employee = Employee.model_validate(new_employee)
+
+        self.session.add(db_employee)
+        self.session.commit()
+
+        return db_employee
+
+    def get_employees(self, offset: int = 0, limit: int = 100):
+        employees = self.session.exec(
+            select(Employee).offset(offset).limit(limit)
+        ).all()
+        return employees
+
+    def get_employee_by_id(self, id: UUID) -> Employee:
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def remove_employee_by_id(self, id: UUID) -> Employee:
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            self.session.delete(employee)
+            self.session.commit()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+
+class EmployeeService(EmployeeServiceBase):
+    """
+    Service class for employee-related operations.
+
+    This class provides methods to interact with the database and perform operations on employees.
+
+    Attributes:
+        session: The database session to be used for operations.
+        email_service: The email service to be used for sending emails.
+    """
+
+    def __init__(self, session: Session, email_service: EmailService):
+        self.session = session
+        self.email_service = email_service
+
 
     def compute_email_code(self, employee: Employee) -> str:
         """
