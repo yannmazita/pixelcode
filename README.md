@@ -68,7 +68,7 @@ uvicorn app.main:api --reload
 
 ## To do
 - Frontend: success/failure screens
-- Backend: Cleanup pixelcode error handling
+- Backend: Database error handling
 - Backend: Printing to Star Micronics SK1-31
 - Backend: Cleanup qr codes once they are printed
 - Admin dashboard
