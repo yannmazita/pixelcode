@@ -4,7 +4,7 @@ from pydantic import EmailStr
 import qrcode
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
 
 from app.employees.models import (
     Employee,
@@ -88,6 +88,11 @@ class EmployeeServiceBase:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"No state found for employee ID: {id}",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Multiple states found for employee",
             )
 
 
@@ -211,6 +216,72 @@ class EmployeeAdminService(EmployeeServiceBase):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Employee does not exist",
+            )
+
+    def get_employee_state_by_id(self, id: UUID) -> EmployeeState:
+        """
+        Retrieve an employee's state information from the database using their database ID.
+
+        Args:
+            id: The database ID of the employee.
+        Returns:
+            The employee's state information.
+        """
+        try:
+            state = self.session.exec(
+                select(EmployeeState).where(EmployeeState.id == id)
+            ).one()
+            return state
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee state does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Multiple states found for employee",
+            )
+
+    def get_employee_states(self, offset: int = 0, limit: int = 100):
+        """
+        Retrieve a list of employee states from the database.
+        Args:
+            offset: The number of records to skip.
+            limit: The maximum number of records to return.
+        Returns:
+            A list of employee states.
+        """
+
+        states = self.session.exec(
+            select(EmployeeState).offset(offset).limit(limit)
+        ).all()
+        return states
+
+    def delete_employee_state_by_id(self, id: UUID) -> EmployeeState:
+        """
+        Delete an employee state from the database using their database ID.
+        Args:
+            id: The database ID of the employee state.
+        Returns:
+            The removed employee state.
+        """
+        try:
+            state = self.session.exec(
+                select(EmployeeState).where(EmployeeState.id == id)
+            ).one()
+            self.session.delete(state)
+            self.session.commit()
+            return state
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee state does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Multiple states found for employee",
             )
 
 

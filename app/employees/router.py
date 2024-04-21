@@ -135,6 +135,45 @@ async def get_all_employees(
         )
 
 
+@router.get("/state/id/{id}", response_model=EmployeeStateRead)
+async def get_employee_state_by_id(
+    id: UUID,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    admin_service = EmployeeAdminService(session)
+    try:
+        employee_state = admin_service.get_employee_state_by_id(id)
+        return employee_state
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.get("/state/all", response_model=list[EmployeeStateRead])
+async def get_all_employee_states(
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    admin_service = EmployeeAdminService(session)
+    try:
+        employee_states = admin_service.get_employee_states()
+        return employee_states
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
 @router.delete("/id={id}", response_model=EmployeeRead)
 async def delete_employee_by_id(
     id: UUID,
