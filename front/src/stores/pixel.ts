@@ -1,41 +1,49 @@
 import { defineStore } from 'pinia';
-import { useClientStore } from '@/stores/client.ts';
 import { reactive, ref, Ref } from 'vue';
-import { EmployeeStatus } from '@/interfaces.ts';
+import axios from 'axios';
+import { EmployeeIdentifier, EmployeeState } from '@/interfaces.ts';
 
 export const usePixelStore = defineStore('pixel', () => {
-    const clientStore = useClientStore();
-    const employeeStatus: EmployeeStatus = reactive({
+    const employeeState: EmployeeState = reactive({
         email_exists: null,
-        employee_id_exists: null,
+        internal_id_exists: null,
         email_code_sent: false,
         email_code_validated: false,
     });
 
-    async function sendEmployeeInformation(employeeEmail: string, employeeId: string): Promise<void> {
+    async function sendEmployeeIdentifier(identity: EmployeeIdentifier): Promise<void> {
         try {
-            await clientStore.connectSocket();
-            await clientStore.sendSocketMessage(JSON.stringify({
-                action: 'employee_info',
-                data: {
-                    employee_id: employeeId,
-                    employee_email: employeeEmail,
-                },
-            }));
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/employees/send-email/`,
+                identity,
+                {
+                    headers: {
+                        accept: 'application/json',
+                    }
+                }
+            );
+            Object.assign(employeeState, response.data);
         }
         catch (error) {
             console.log(error);
         }
     }
 
-    async function sendEmailVerificationCode(code: number): Promise<void> {
+    async function sendEmailVerificationCode(identity: EmployeeIdentifier, code: number): Promise<void> {
         try {
-            await clientStore.sendSocketMessage(JSON.stringify({
-                action: 'email_verification',
-                data: {
-                    email_code: code,
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/employees/verify-email/`,
+                {
+                    ...identity,
+                    code: code,
                 },
-            }));
+                {
+                    headers: {
+                        accept: 'application/json',
+                    }
+                }
+            );
+            Object.assign(employeeState, response.data);
         }
         catch (error) {
             console.log(error);
@@ -43,8 +51,8 @@ export const usePixelStore = defineStore('pixel', () => {
     }
 
     return {
-        employeeStatus,
-        sendEmployeeInformation,
+        employeeState,
+        sendEmployeeIdentifier,
         sendEmailVerificationCode,
     }
 })
