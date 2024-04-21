@@ -174,7 +174,7 @@ async def get_all_employee_states(
         )
 
 
-@router.delete("/id={id}", response_model=EmployeeRead)
+@router.delete("/id/{id}", response_model=EmployeeRead)
 async def delete_employee_by_id(
     id: UUID,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
