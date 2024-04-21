@@ -5,8 +5,13 @@ from app.auth.dependencies import validate_token
 from app.auth.models import TokenData
 from app.database import get_session
 from app.emails.dependencies import get_email_service
-from app.employees.dependencies import get_employee_from_identifier
-from app.employees.models import EmployeeCreate, EmployeeIdentifier, EmployeeRead
+from app.emails.services import EmailService
+from app.employees.models import (
+    EmployeeCreate,
+    EmployeeIdentifier,
+    EmployeeRead,
+    EmployeeStateRead,
+)
 from app.employees.services import EmployeeAdminService, EmployeeService
 
 router = APIRouter(
@@ -15,19 +20,22 @@ router = APIRouter(
 )
 
 
-@router.post("/send-email")
+@router.post("/send-email", response_model=EmployeeStateRead)
 async def send_verification_email(
-    employee_identifier: Annotated[EmployeeIdentifier, Depends()],
+    employee_identifier: EmployeeIdentifier,
     session: Annotated[Session, Depends(get_session)],
+    email_service: Annotated[EmailService, Depends(get_email_service)],
 ):
-    employee = get_employee_from_identifier(employee_identifier)
-    service = EmployeeService(session, email_service=Depends(get_email_service))
-    service.generate_and_send_email(employee)
-    return {"message": "Email sent successfully"}
+    service = EmployeeService(session, email_service)
+    if employee_identifier.internal_id:
+        employee = service.get_employee_by_internal_id(employee_identifier.internal_id)
+    else:
+        employee = service.get_employee_by_email(employee_identifier.email)
+    return service.generate_and_send_email(employee)
 
 
 @router.post("/", response_model=EmployeeRead)
-def create_employee(
+async def create_employee(
     employee: EmployeeCreate,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
     session: Annotated[Session, Depends(get_session)],

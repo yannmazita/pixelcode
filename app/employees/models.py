@@ -1,11 +1,11 @@
 from pydantic import EmailStr, validate_call
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, String
 from uuid import UUID
 
 
 class EmployeeBase(SQLModel):
     internal_id: str = Field(index=True, unique=True)
-    email: str = Field(index=True, unique=True)
+    email: EmailStr = Field(sa_type=String(), index=True, unique=True)
 
 
 class Employee(EmployeeBase, table=True):
@@ -28,12 +28,19 @@ class EmployeeRead(EmployeeBase):
     firstname: str
 
 
-class EmployeeState(SQLModel, table=True):
-    id: UUID | None = Field(default=None, primary_key=True)
+class EmployeeStateBase(SQLModel):
     internal_id: str = Field(index=True, foreign_key="employee.internal_id")
     code_to_print: str = Field(foreign_key="employee.code_to_print")
     email_code_validated: bool = False
     email_code_sent: bool = False
+
+
+class EmployeeState(EmployeeStateBase, table=True):
+    id: UUID | None = Field(default=None, primary_key=True)
+
+
+class EmployeeStateRead(EmployeeStateBase):
+    pass
 
 
 class EmployeeIdentifier(SQLModel, table=False):
@@ -46,6 +53,4 @@ class EmployeeIdentifier(SQLModel, table=False):
         if not self.internal_id and not self.email:
             raise ValueError("Either internal_id or email must be provided")
         if self.internal_id and self.email:
-            raise ValueError(
-                "Only one of internal_id or email should be provided"
-            )
+            raise ValueError("Only one of internal_id or email should be provided")
