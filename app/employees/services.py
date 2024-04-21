@@ -15,6 +15,16 @@ from app.emails.services import EmailService
 
 
 class EmployeeServiceBase:
+    """
+    Base class for employee-related operations.
+
+    This class provides methods to interact with the database and perform operations on employees.
+    It is intended to be used by other service classes.
+
+    Attributes:
+        session: The database session to be used for operations.
+    """
+
     def __init__(self, session: Session):
         self.session = session
 
@@ -83,12 +93,10 @@ class EmployeeServiceBase:
 
 class EmployeeAdminService(EmployeeServiceBase):
     """
-    Service class for employee-related operations for admin users.
+    Service class for employee-related operations.
 
-    This class provides methods to interact with the database and perform operations on employees for admin users.
-
-    Attributes:
-        session: The database session to be used for operations.
+    This class provides methods to interact with the database and perform operations on employees.
+    It is intended to be used by administrators.
     """
 
     def __init__(self, session: Session):
@@ -211,14 +219,14 @@ class EmployeeService(EmployeeServiceBase):
     Service class for employee-related operations.
 
     This class provides methods to interact with the database and perform operations on employees.
+    It is intended to be used by employees themselves.
 
     Attributes:
-        session: The database session to be used for operations.
         email_service: The email service to be used for sending emails.
     """
 
     def __init__(self, session: Session, email_service: EmailService):
-        self.session = session
+        super().__init__(session)
         self.email_service = email_service
 
     def compute_email_code(self, employee: Employee) -> str:
