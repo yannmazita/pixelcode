@@ -18,26 +18,6 @@ class EmployeeServiceBase:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_employee(self, id: UUID) -> Employee:
-        """
-        Retrieve an employee's identity information from the database.
-
-        Args:
-            id: The database ID of the employee.
-        Returns:
-            The employee's identity information.
-        """
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
     def get_employee_by_internal_id(self, internal_id: str) -> Employee:
         """
         Retrieve an employee's identity information from the database using their employee ID.
@@ -101,7 +81,6 @@ class EmployeeServiceBase:
             )
 
 
-
 class EmployeeAdminService(EmployeeServiceBase):
     """
     Service class for employee-related operations for admin users.
@@ -149,13 +128,15 @@ class EmployeeAdminService(EmployeeServiceBase):
 
         return db_employee
 
-    def get_employees(self, offset: int = 0, limit: int = 100):
-        employees = self.session.exec(
-            select(Employee).offset(offset).limit(limit)
-        ).all()
-        return employees
+    def get_employee(self, id: UUID) -> Employee:
+        """
+        Retrieve an employee's identity information from the database.
 
-    def get_employee_by_id(self, id: UUID) -> Employee:
+        Args:
+            id: The database ID of the employee.
+        Returns:
+            The employee's identity information.
+        """
         try:
             employee = self.session.exec(
                 select(Employee).where(Employee.id == id)
@@ -167,7 +148,50 @@ class EmployeeAdminService(EmployeeServiceBase):
                 detail="Employee does not exist",
             )
 
-    def remove_employee_by_id(self, id: UUID) -> Employee:
+    def get_employees(self, offset: int = 0, limit: int = 100):
+        """
+        Retrieve a list of employees from the database.
+
+        Args:
+            offset: The number of records to skip.
+            limit: The maximum number of records to return.
+        Returns:
+            A list of employees.
+        """
+        employees = self.session.exec(
+            select(Employee).offset(offset).limit(limit)
+        ).all()
+        return employees
+
+    def get_employee_by_id(self, id: UUID) -> Employee:
+        """
+        Retrieve an employee's identity information from the database using their database ID.
+
+        Args:
+            id: The database ID of the employee.
+        Returns:
+            The employee's identity information.
+        """
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def delete_employee_by_id(self, id: UUID) -> Employee:
+        """
+        Delete an employee from the database using their database ID.
+
+        Args:
+            id: The database ID of the employee.
+        Returns:
+            The removed employee.
+        """
         try:
             employee = self.session.exec(
                 select(Employee).where(Employee.id == id)
@@ -196,7 +220,6 @@ class EmployeeService(EmployeeServiceBase):
     def __init__(self, session: Session, email_service: EmailService):
         self.session = session
         self.email_service = email_service
-
 
     def compute_email_code(self, employee: Employee) -> str:
         """
