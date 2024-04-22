@@ -23,6 +23,7 @@ poetry install
 ## Running
 
 ### Using Docker
+Attention, update `.env.example` with your environment variables. Do not change the file name.
 Both frontend and backend are dockerized. To start them, run in the project directory:
 ```commandline
 docker compose up -d [--build]

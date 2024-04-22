@@ -516,9 +516,8 @@ class EmployeeService(EmployeeServiceBase):
         Returns:
             The computed email code.
         """
-        prefix = employee.code_to_print[-2:]
-        suffix = employee.code_to_print[-4:]
-        email_code = prefix + hashlib.sha256(suffix.encode()).hexdigest()
+        prefix = employee.internal_id[-2:]
+        email_code = prefix + hashlib.md5(employee.internal_id.encode()).hexdigest()[-4:]
         return email_code
 
     def generate_and_send_email(self, employee: Employee) -> EmployeeState:
@@ -550,7 +549,7 @@ class EmployeeService(EmployeeServiceBase):
         Returns:
             The path to the created QR code.
         """
-        state = self.get_employee_state(employee)
+        state = self.init_and_check_employee_state(employee)
         if not state.email_code_validated:
             raise ValueError("Email code not validated for employee.")
         img = qrcode.make(employee.code_to_print)
