@@ -29,7 +29,7 @@ class EmployeeRead(EmployeeBase):
 
 
 class EmployeeStateBase(SQLModel):
-    internal_id: str = Field(index=True, foreign_key="employee.internal_id")
+    internal_id: str = Field(index=True, foreign_key="employee.internal_id", unique=True)
     code_to_print: str = Field(foreign_key="employee.code_to_print")
     email_code_validated: bool = False
     email_code_sent: bool = False

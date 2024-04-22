@@ -10,9 +10,9 @@ def add_fake_employee():
         id=uuid4(),
         internal_id="12345",
         code_to_print="ABCDE",
-        surname="Doe",
-        firstname="John",
-        email="john.doe@email.com",
+        surname="Mazita",
+        firstname="Yann",
+        email="dev.mazita@gmail.com",
     )
     db_employee = Employee.model_validate(employee)
     session = Session(engine)
