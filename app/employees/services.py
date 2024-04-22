@@ -519,7 +519,6 @@ class EmployeeService(EmployeeServiceBase):
         prefix = employee.code_to_print[-2:]
         suffix = employee.code_to_print[-4:]
         email_code = prefix + hashlib.sha256(suffix.encode()).hexdigest()
-        print(f"{'#'*10} email code computed")
         return email_code
 
     def generate_and_send_email(self, employee: Employee) -> EmployeeState:
@@ -533,11 +532,9 @@ class EmployeeService(EmployeeServiceBase):
         state = self.init_and_check_employee_state(employee)
 
         try:
-            print(f"{'#'*10} inside try in generate_and_send_email")
             self.email_service.send_email(email_message, employee.email)
             state.email_code_sent = True
         except Exception as e:
-            print(f"{'#'*10} inside except in generate_and_send_email")
             # Very crude, needs to be more thorough
             print(e)
             state.email_code_sent = False

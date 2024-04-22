@@ -6,23 +6,21 @@ from email.mime.text import MIMEText
 
 
 class EmailService:
+    """
+    """
     def __init__(self):
         self.server_address: str = os.getenv("SMTP_SERVER_ADDRESS")  # type: ignore
         self.port: int = os.getenv("SMTP_PORT")  # type: ignore
         self.email_address: str = os.getenv("SMTP_EMAIL_ADDRESS")  # type: ignore
-        self.password: str = os.getenv("SMTP_SERVER_PASSWORD")  # type: ignore
+        #self.password: str = os.getenv("SMTP_SERVER_PASSWORD")  # type: ignore
         self.context = ssl.create_default_context()
 
     def send_email(self, message: MIMEMultipart, receiver_email: str) -> None:
-        print(f"{'#'*10} Trying to open SMTP SSL connection")
-        with smtplib.SMTP_SSL(
-            self.server_address, self.port, context=self.context
+        with smtplib.SMTP(
+            self.server_address, self.port
         ) as server:
-            print(f"{'#'*10} SMTP SSL connection opened")
-            server.login(self.email_address, self.password)
-            print(f"{'#'*10} logged into email service")
+            #server.login(self.email_address, self.password)
             server.sendmail(self.email_address, receiver_email, message.as_string())
-            print(f"{'#'*10} email sent")
 
     def create_email(self, receiver_email: str, email_code: str) -> MIMEMultipart:
         """
@@ -34,5 +32,4 @@ class EmailService:
         message["Subject"] = "Email Verification Code"
         body = MIMEText(f"Your email verification code is {email_code}", "plain")
         message.attach(body)
-        print(f"{'#'*10} email created")
         return message
