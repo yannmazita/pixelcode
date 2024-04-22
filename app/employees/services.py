@@ -196,6 +196,91 @@ class EmployeeAdminService(EmployeeServiceBase):
                 detail="Employee does not exist",
             )
 
+    def update_employee_by_id(self, id: UUID, employee: EmployeeCreate) -> Employee:
+        """
+        Update an employee's information in the database using their database ID.
+        Args:
+            id: The database ID of the employee.
+            employee: The updated employee information.
+        Returns:
+            The updated employee.
+        """
+        try:
+            db_employee = self.session.exec(
+                select(Employee).where(Employee.id == id)
+            ).one()
+            db_employee.internal_id = employee.internal_id
+            db_employee.email = employee.email
+            db_employee.code_to_print = employee.code_to_print
+            db_employee.surname = employee.surname
+            db_employee.firstname = employee.firstname
+            self.session.add(db_employee)
+            self.session.commit()
+            return db_employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def update_employee_by_internal_id(
+        self, internal_id: str, employee: EmployeeCreate
+    ) -> Employee:
+        """
+        Update an employee's information in the database using their internal ID.
+        Args:
+            internal_id: The internal ID of the employee.
+            employee: The updated employee information.
+        Returns:
+            The updated employee.
+        """
+        try:
+            db_employee = self.session.exec(
+                select(Employee).where(Employee.internal_id == internal_id)
+            ).one()
+            db_employee.internal_id = employee.internal_id
+            db_employee.email = employee.email
+            db_employee.code_to_print = employee.code_to_print
+            db_employee.surname = employee.surname
+            db_employee.firstname = employee.firstname
+            self.session.add(db_employee)
+            self.session.commit()
+            return db_employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def update_employee_by_email(
+        self, email: EmailStr, employee: EmployeeCreate
+    ) -> Employee:
+        """
+        Update an employee's information in the database using their email.
+        Args:
+            email: The email of the employee.
+            employee: The updated employee information.
+        Returns:
+            The updated employee.
+        """
+        try:
+            db_employee = self.session.exec(
+                select(Employee).where(Employee.email == email)
+            ).one()
+            db_employee.internal_id = employee.internal_id
+            db_employee.email = employee.email
+            db_employee.code_to_print = employee.code_to_print
+            db_employee.surname = employee.surname
+            db_employee.firstname = employee.firstname
+            self.session.add(db_employee)
+            self.session.commit()
+            return db_employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
     def delete_employee_by_id(self, id: UUID) -> Employee:
         """
         Delete an employee from the database using their database ID.
@@ -208,6 +293,49 @@ class EmployeeAdminService(EmployeeServiceBase):
         try:
             employee = self.session.exec(
                 select(Employee).where(Employee.id == id)
+            ).one()
+            self.session.delete(employee)
+            self.session.commit()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def delete_employee_by_internal_id(self, internal_id: str) -> Employee:
+        """
+        Delete an employee from the database using their internal ID.
+
+        Args:
+            internal_id: The internal ID of the employee.
+        Returns:
+            The removed employee.
+        """
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.internal_id == internal_id)
+            ).one()
+            self.session.delete(employee)
+            self.session.commit()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee does not exist",
+            )
+
+    def delete_employee_by_email(self, email: EmailStr) -> Employee:
+        """
+        Delete an employee from the database using their email.
+        Args:
+            email: The email of the employee.
+        Returns:
+            The removed employee.
+        """
+        try:
+            employee = self.session.exec(
+                select(Employee).where(Employee.email == email)
             ).one()
             self.session.delete(employee)
             self.session.commit()
