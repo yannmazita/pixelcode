@@ -157,7 +157,7 @@ async def update_employee_by_id(
 
 
 @router.put("/internal_id/{internal_id}", response_model=EmployeeRead)
-async def updated_employee_by_internal_id(
+async def update_employee_by_internal_id(
     internal_id: str,
     employee: EmployeeCreate,
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
