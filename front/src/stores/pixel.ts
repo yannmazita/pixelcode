@@ -7,6 +7,7 @@ export const usePixelStore = defineStore('pixel', () => {
     const employeeState: EmployeeState = reactive({
         email_exists: null,
         internal_id_exists: null,
+        code_to_print: null,
         email_code_sent: null,
         email_code_validated: null,
     });
@@ -23,9 +24,13 @@ export const usePixelStore = defineStore('pixel', () => {
                 }
             );
             //Object.assign(employeeState, response.data);
-            employeeState.email_exists = response.data.email_exists;
-            employeeState.internal_id_exists = response.data.internal_id_exists;
             employeeState.email_code_sent = response.data.email_code_sent;
+            if (identity.email) {
+                employeeState.email_exists = true;
+            }
+            else if (identity.internal_id) {
+                employeeState.internal_id_exists = true;
+            }
         }
         catch (error) {
             if (identity.email) {

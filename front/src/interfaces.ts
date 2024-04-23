@@ -13,9 +13,11 @@ export interface EmployeeIdentifier {
     email: string | null,
 }
 
+// The api will send internal_id on successful employee retrieval instead of email_exists/internal_id_exists
 export interface EmployeeState {
-    email_exists: boolean | null,
-    internal_id_exists: boolean | null,
+    email_exists: boolean | null,   // not defined in API
+    internal_id_exists: boolean | null, // not defined in API
+    code_to_print: string | null,
     email_code_sent: boolean | null,
     email_code_validated: boolean | null,
 }
