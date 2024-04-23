@@ -1,6 +1,6 @@
 <template>
     <AppModal @click-event="() => { jumpToHome(); }" :show-modal="showModal">
-        <template #headerText>Incorrect identifier</template>
+        <template #headerText>{{ headerText }}</template>
         <template #paragraphText>{{ message }}</template>
         <template #buttonText>Close</template>
     </AppModal>
@@ -16,6 +16,7 @@ const pixelStore = usePixelStore();
 const menuStore = useMenuStore();
 const { employeeState } = storeToRefs(pixelStore);
 const showModal: Ref<boolean> = ref<boolean>(false);
+const headerText: Ref<string> = ref<string>("");
 const message: Ref<string> = ref<string>("");
 
 const jumpToHome = (): void => {
@@ -36,20 +37,27 @@ const emailCodeSent = computed(() => {
 });
 
 watch(identityError, (newValue) => {
+    headerText.value = "Incorrect identifier";
     if (newValue) {
-        showModal.value = true;
         if (employeeState.value.internal_id_exists === false) {
             message.value = "The id you entered does not exist in the system.";
+            showModal.value = true;
         }
         else if (employeeState.value.email_exists === false) {
             message.value = "The email you entered does not exist in the system.";
+            showModal.value = true;
         }
     }
 });
 watch(emailCodeSent, (newValue) => {
+    headerText.value = "Verification code";
     if (newValue) {
-        showModal.value = true;
         message.value = "A verification code has been sent to your email.";
+        showModal.value = true;
+    }
+    else {
+        message.value = "An error occurred while sending the verification code.";
+        showModal.value = true;
     }
 });
 </script>
