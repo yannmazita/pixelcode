@@ -1,5 +1,5 @@
 <template>
-    <AppModal @click-event="() => { jumpToHome }" :show-modal="showModal">
+    <AppModal @click-event="() => { jumpToHome(); }" :show-modal="showModal">
         <template #headerText>Incorrect identifier</template>
         <template #paragraphText>{{ message }}</template>
         <template #buttonText>Close</template>
@@ -23,8 +23,8 @@ const jumpToHome = (): void => {
     menuStore.resetChoices();
 };
 
-const identified = computed(() => {
-    if (employeeState.value.internal_id_exists === true || employeeState.value.email_exists === true) {
+const identityError = computed(() => {
+    if (employeeState.value.internal_id_exists === false || employeeState.value.email_exists === false) {
         return true;
     }
     else {
@@ -32,8 +32,9 @@ const identified = computed(() => {
     }
 });
 
-watch(identified, (newValue) => {
-    if (!newValue) {
+watch(identityError, (newValue) => {
+    console.log(`Inside watch: ${newValue}`);
+    if (newValue) {
         showModal.value = true;
         if (employeeState.value.internal_id_exists === false) {
             message.value = "The id you entered does not exist in the system.";

@@ -25,6 +25,12 @@ export const usePixelStore = defineStore('pixel', () => {
             Object.assign(employeeState, response.data);
         }
         catch (error) {
+            if (identity.email) {
+                employeeState.email_exists = false;
+            }
+            else if (identity.internal_id) {
+                employeeState.internal_id_exists = false;
+            }
             console.log(error);
         }
     }
