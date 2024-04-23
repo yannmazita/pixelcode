@@ -4,13 +4,14 @@ from pydantic import EmailStr
 import qrcode
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
-from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from app.employees.models import (
     Employee,
     EmployeeCreate,
     EmployeeState,
 )
+from app.employees.schemas import EmployeeAttribute
 from app.emails.services import EmailService
 
 
@@ -27,6 +28,63 @@ class EmployeeServiceBase:
 
     def __init__(self, session: Session):
         self.session = session
+
+    def get_employee_by_attribute(
+        self, attribute: EmployeeAttribute, value: str
+    ) -> Employee:
+        """
+        Retrieve an employee's identity information from the database using an attribute.
+        Args:
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+        Returns:
+            The employee's identity information.
+        """
+        try:
+            employee = self.session.exec(
+                select(Employee).where(getattr(Employee, attribute.value) == value)
+            ).one()
+            return employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple employees found with {attribute.value} = {value}",
+            )
+
+    def update_employee_by_attribute(
+        self, attribute: EmployeeAttribute, value: str, employee: EmployeeCreate
+    ) -> Employee:
+        """
+        Update an employee's information in the database using an attribute.
+        Args:
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+            employee: The updated employee information.
+        Returns:
+            The updated employee.
+        """
+        try:
+            db_employee = self.session.exec(
+                select(Employee).where(getattr(Employee, attribute.value) == value)
+            ).one()
+            db_employee.internal_id = employee.internal_id
+            db_employee.email = employee.email
+            db_employee.code_to_print = employee.code_to_print
+            db_employee.surname = employee.surname
+            db_employee.firstname = employee.firstname
+            self.session.add(db_employee)
+            self.session.commit()
+            return db_employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee with {attribute.value} = {value} does not exist",
+            )
 
     def get_employee_by_internal_id(self, internal_id: str) -> Employee:
         """
@@ -517,7 +575,9 @@ class EmployeeService(EmployeeServiceBase):
             The computed email code.
         """
         prefix = employee.internal_id[-2:]
-        email_code = prefix + hashlib.md5(employee.internal_id.encode()).hexdigest()[-4:]
+        email_code = (
+            prefix + hashlib.md5(employee.internal_id.encode()).hexdigest()[-4:]
+        )
         return email_code
 
     def generate_and_send_email(self, employee: Employee) -> EmployeeState:
