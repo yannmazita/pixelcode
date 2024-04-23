@@ -14,6 +14,7 @@ import AppModal from '@/components/AppModalOneButton.vue';
 
 const pixelStore = usePixelStore();
 const menuStore = useMenuStore();
+const { identifierStatus } = storeToRefs(pixelStore);
 const { employeeState } = storeToRefs(pixelStore);
 const showModal: Ref<boolean> = ref<boolean>(false);
 const headerText: Ref<string> = ref<string>("");
@@ -25,7 +26,7 @@ const jumpToHome = (): void => {
 };
 
 const identityError = computed(() => {
-    if (employeeState.value.internal_id_exists === false || employeeState.value.email_exists === false) {
+    if (identifierStatus.value.internal_id_exists === false || identifierStatus.value.email_exists === false) {
         return true;
     }
     else {
@@ -39,11 +40,11 @@ const emailCodeSent = computed(() => {
 watch(identityError, (newValue) => {
     headerText.value = "Incorrect identifier";
     if (newValue) {
-        if (employeeState.value.internal_id_exists === false) {
+        if (identifierStatus.value.internal_id_exists === false) {
             message.value = "The id you entered does not exist in the system.";
             showModal.value = true;
         }
-        else if (employeeState.value.email_exists === false) {
+        else if (identifierStatus.value.email_exists === false) {
             message.value = "The email you entered does not exist in the system.";
             showModal.value = true;
         }

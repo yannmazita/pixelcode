@@ -50,6 +50,8 @@ const onSubmit = handleSubmit(async (values, { resetForm }) => {
             internal_id: values.userInput,
             email: null,
         });
+    } else if (menuStore.codeChoice) {
+        //await pixelStore.sendVerificationCode(internal_id, values.userInput);
     }
 
     resetForm();
