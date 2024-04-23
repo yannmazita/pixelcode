@@ -16,7 +16,7 @@ export interface EmployeeIdentifier {
 export interface EmployeeState {
     email_exists: boolean | null,
     internal_id_exists: boolean | null,
-    email_code_sent: boolean,
-    email_code_validated: boolean,
+    email_code_sent: boolean | null,
+    email_code_validated: boolean | null,
 }
 

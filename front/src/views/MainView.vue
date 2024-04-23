@@ -6,7 +6,7 @@
 </template>
 <script setup lang="ts">
 import HomeView from '@/views/HomeView.vue';
-import QueryView from '@/views/QueryView.vue'
+import FindEmployee from '@/views/FindEmployeeView.vue'
 import PageTitle from '@/components/AppPageTitle.vue'
 import { useMenuStore } from '@/stores/menu.ts';
 import { computed } from 'vue';
@@ -19,7 +19,7 @@ const currentPage = computed(() => {
 
 const visibleComponent = computed(() => {
     if (menuStore.informationChoice) {
-        return QueryView;
+        return FindEmployee;
     }
     else if (menuStore.codeChoice) {
         return;

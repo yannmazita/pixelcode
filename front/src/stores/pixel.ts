@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { reactive, ref, Ref } from 'vue';
+import { reactive } from 'vue';
 import axios from 'axios';
 import { EmployeeIdentifier, EmployeeState } from '@/interfaces.ts';
 
@@ -7,8 +7,8 @@ export const usePixelStore = defineStore('pixel', () => {
     const employeeState: EmployeeState = reactive({
         email_exists: null,
         internal_id_exists: null,
-        email_code_sent: false,
-        email_code_validated: false,
+        email_code_sent: null,
+        email_code_validated: null,
     });
 
     async function sendEmployeeIdentifier(identity: EmployeeIdentifier): Promise<void> {
@@ -22,7 +22,10 @@ export const usePixelStore = defineStore('pixel', () => {
                     }
                 }
             );
-            Object.assign(employeeState, response.data);
+            //Object.assign(employeeState, response.data);
+            employeeState.email_exists = response.data.email_exists;
+            employeeState.internal_id_exists = response.data.internal_id_exists;
+            employeeState.email_code_sent = response.data.email_code_sent;
         }
         catch (error) {
             if (identity.email) {
@@ -49,7 +52,8 @@ export const usePixelStore = defineStore('pixel', () => {
                     }
                 }
             );
-            Object.assign(employeeState, response.data);
+            //Object.assign(employeeState, response.data);
+            employeeState.email_code_validated = response.data.email_code_validated;
         }
         catch (error) {
             console.log(error);
@@ -59,8 +63,8 @@ export const usePixelStore = defineStore('pixel', () => {
     function resetEmployeeState(): void {
         employeeState.email_exists = null;
         employeeState.internal_id_exists = null;
-        employeeState.email_code_sent = false;
-        employeeState.email_code_validated = false;
+        employeeState.email_code_sent = null;
+        employeeState.email_code_validated = null;
     }
 
     return {

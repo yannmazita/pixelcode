@@ -31,9 +31,11 @@ const identityError = computed(() => {
         return false;
     }
 });
+const emailCodeSent = computed(() => {
+    return employeeState.value.email_code_sent;
+});
 
 watch(identityError, (newValue) => {
-    console.log(`Inside watch: ${newValue}`);
     if (newValue) {
         showModal.value = true;
         if (employeeState.value.internal_id_exists === false) {
@@ -42,6 +44,12 @@ watch(identityError, (newValue) => {
         else if (employeeState.value.email_exists === false) {
             message.value = "The email you entered does not exist in the system.";
         }
+    }
+});
+watch(emailCodeSent, (newValue) => {
+    if (newValue) {
+        showModal.value = true;
+        message.value = "A verification code has been sent to your email.";
     }
 });
 </script>
