@@ -56,9 +56,17 @@ export const usePixelStore = defineStore('pixel', () => {
         }
     }
 
+    function resetEmployeeState(): void {
+        employeeState.email_exists = null;
+        employeeState.internal_id_exists = null;
+        employeeState.email_code_sent = false;
+        employeeState.email_code_validated = false;
+    }
+
     return {
         employeeState,
         sendEmployeeIdentifier,
         sendEmailVerificationCode,
+        resetEmployeeState,
     }
 })
