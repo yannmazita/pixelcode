@@ -2,62 +2,62 @@ import { defineStore } from 'pinia';
 import { ref, Ref } from 'vue';
 
 export const useMenuStore = defineStore('menu', () => {
-    const informationChoice: Ref<boolean> = ref(false); // The user has chosen to input employee information.
+    const findEmployeeChoice: Ref<boolean> = ref(false); // The user has chosent to find an employee 
     const codeChoice: Ref<boolean> = ref(false); // The user has chosen to input code received by email.
     const helpChoice: Ref<boolean> = ref(false); // The user has chosen to go to the help page.
     const currentPageTitle: Ref<string> = ref("Home"); // The title of the current page.
-    const identifierIdChoice: Ref<boolean> = ref(false); // The user has chosen to input their internal ID.
-    const identifierEmailChoice: Ref<boolean> = ref(false); // The user has chosen to input their email.
+    const findEmployeeByInternalIDChoice: Ref<boolean> = ref(false); // The user has chosen to find employee by internal ID.
+    const findEmployeeByEmailChoice: Ref<boolean> = ref(false); // The user has chosen to find employee by email.
 
     function setIdentifierTypeID(value: boolean): void {
-        identifierIdChoice.value = value;
-        identifierEmailChoice.value = !value;
+        findEmployeeByInternalIDChoice.value = value;
+        findEmployeeByEmailChoice.value = !value;
     }
     function setIdentifierTypeEmail(value: boolean): void {
-        identifierIdChoice.value = !value;
-        identifierEmailChoice.value = value;
+        findEmployeeByInternalIDChoice.value = !value;
+        findEmployeeByEmailChoice.value = value;
     }
 
-    function setInformationChoice(value: boolean): void {
-        informationChoice.value = value;
+    function setFindEmployeeChoice(value: boolean): void {
+        findEmployeeChoice.value = value;
         codeChoice.value = !value;
         helpChoice.value = !value;
         currentPageTitle.value = "Find employee";
     }
 
     function setCodeChoice(value: boolean): void {
-        informationChoice.value = !value;
+        findEmployeeChoice.value = !value;
         codeChoice.value = value;
         helpChoice.value = !value;
         currentPageTitle.value = "Verification code";
     }
 
     function setHelpChoice(value: boolean): void {
-        informationChoice.value = !value;
+        findEmployeeChoice.value = !value;
         codeChoice.value = !value;
         helpChoice.value = value;
         currentPageTitle.value = "Help";
     }
 
     function resetChoices(): void {
-        informationChoice.value = false;
+        findEmployeeChoice.value = false;
         codeChoice.value = false;
         helpChoice.value = false;
         currentPageTitle.value = "Home";
     }
 
     function resetIdentifierChoices(): void {
-        identifierIdChoice.value = false;
-        identifierEmailChoice.value = false;
+        findEmployeeByInternalIDChoice.value = false;
+        findEmployeeByEmailChoice.value = false;
     }
 
     return {
-        informationChoice,
+        findEmployeeChoice,
         codeChoice,
         helpChoice,
-        setInformationChoice,
-        identifierIdChoice,
-        identifierEmailChoice,
+        setFindEmployeeChoice,
+        findEmployeeByInternalIDChoice,
+        findEmployeeByEmailChoice,
         currentPageTitle,
         setCodeChoice,
         setHelpChoice,

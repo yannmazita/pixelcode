@@ -18,7 +18,7 @@ const currentPage = computed(() => {
 });
 
 const visibleComponent = computed(() => {
-    if (menuStore.informationChoice) {
+    if (menuStore.findEmployeeChoice) {
         return FindEmployee;
     }
     else if (menuStore.codeChoice) {

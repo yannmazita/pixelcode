@@ -6,8 +6,8 @@
                 <div class="text-4xl">❌</div>
             </div>
             <div class="flex justify-center">
-                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
-                    :additionalRows="otherRows"></Keyboard>
+                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys" :additionalRows="otherRows">
+                </Keyboard>
             </div>
             <div class="flex justify-center">
                 <AppButton :disabled="isSubmitting" type="submit" class="btn btn-primary">{{ 'Submit' }}</AppButton>
@@ -40,12 +40,12 @@ const { handleSubmit, isSubmitting, defineField } = useForm({
 const [userInput] = defineField('userInput');
 
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
-    if (menuStore.identifierEmailChoice) {
+    if (menuStore.findEmployeeByEmailChoice) {
         await pixelStore.sendEmployeeIdentifier({
             internal_id: null,
             email: values.userInput.toLowerCase(),
         });
-    } else if (menuStore.identifierIdChoice) {
+    } else if (menuStore.findEmployeeByInternalIDChoice) {
         await pixelStore.sendEmployeeIdentifier({
             internal_id: values.userInput,
             email: null,
@@ -63,7 +63,7 @@ const keys = computed(() => {
     if (menuStore.codeChoice) {
         return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     }
-    else if (menuStore.informationChoice) {
+    else if (menuStore.findEmployeeChoice) {
         return;
     };
 });
@@ -71,7 +71,7 @@ const otherRows = computed(() => {
     if (menuStore.codeChoice) {
         return [];
     }
-    else if (menuStore.informationChoice) {
+    else if (menuStore.findEmployeeChoice) {
         return;
     }
 });
