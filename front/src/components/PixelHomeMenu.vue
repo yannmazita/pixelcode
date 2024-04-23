@@ -12,10 +12,13 @@
 </template>
 
 <script setup lang="ts">
-import AppButton from '@/components/AppButton.vue';
+import { onMounted } from 'vue';
 import { useMenuStore } from '@/stores/menu.ts'
+import { usePixelStore } from '@/stores/pixel.ts'
+import AppButton from '@/components/AppButton.vue';
 
 const menuStore = useMenuStore();
+const pixelStore = usePixelStore();
 
 const informationChoice = (): void => {
     menuStore.setInformationChoice(true);
@@ -23,4 +26,9 @@ const informationChoice = (): void => {
 const codeChoide = (): void => {
     menuStore.setCodeChoice(true);
 }
+
+onMounted(() => {
+    menuStore.resetChoices();
+    pixelStore.resetEmployeeState();
+});
 </script>

@@ -25,6 +25,12 @@ export const usePixelStore = defineStore('pixel', () => {
             Object.assign(employeeState, response.data);
         }
         catch (error) {
+            if (identity.email) {
+                employeeState.email_exists = false;
+            }
+            else if (identity.internal_id) {
+                employeeState.internal_id_exists = false;
+            }
             console.log(error);
         }
     }
@@ -50,9 +56,17 @@ export const usePixelStore = defineStore('pixel', () => {
         }
     }
 
+    function resetEmployeeState(): void {
+        employeeState.email_exists = null;
+        employeeState.internal_id_exists = null;
+        employeeState.email_code_sent = false;
+        employeeState.email_code_validated = false;
+    }
+
     return {
         employeeState,
         sendEmployeeIdentifier,
         sendEmailVerificationCode,
+        resetEmployeeState,
     }
 })
