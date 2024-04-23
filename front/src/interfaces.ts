@@ -13,10 +13,16 @@ export interface EmployeeIdentifier {
     email: string | null,
 }
 
-export interface EmployeeState {
+// not defined in API
+export interface IdentifierStatus {
     email_exists: boolean | null,
     internal_id_exists: boolean | null,
-    email_code_sent: boolean,
-    email_code_validated: boolean,
+}
+
+export interface EmployeeState {
+    internal_id: string | null,
+    code_to_print: string | null,
+    email_code_sent: boolean | null,
+    email_code_validated: boolean | null,
 }
 

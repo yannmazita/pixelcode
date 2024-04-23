@@ -1,6 +1,6 @@
 <template>
     <AppModal @click-event="() => { jumpToHome(); }" :show-modal="showModal">
-        <template #headerText>Incorrect identifier</template>
+        <template #headerText>{{ headerText }}</template>
         <template #paragraphText>{{ message }}</template>
         <template #buttonText>Close</template>
     </AppModal>
@@ -14,8 +14,10 @@ import AppModal from '@/components/AppModalOneButton.vue';
 
 const pixelStore = usePixelStore();
 const menuStore = useMenuStore();
+const { identifierStatus } = storeToRefs(pixelStore);
 const { employeeState } = storeToRefs(pixelStore);
 const showModal: Ref<boolean> = ref<boolean>(false);
+const headerText: Ref<string> = ref<string>("");
 const message: Ref<string> = ref<string>("");
 
 const jumpToHome = (): void => {
@@ -24,24 +26,39 @@ const jumpToHome = (): void => {
 };
 
 const identityError = computed(() => {
-    if (employeeState.value.internal_id_exists === false || employeeState.value.email_exists === false) {
+    if (identifierStatus.value.internal_id_exists === false || identifierStatus.value.email_exists === false) {
         return true;
     }
     else {
         return false;
     }
 });
+const emailCodeSent = computed(() => {
+    return employeeState.value.email_code_sent;
+});
 
 watch(identityError, (newValue) => {
-    console.log(`Inside watch: ${newValue}`);
+    headerText.value = "Incorrect identifier";
     if (newValue) {
-        showModal.value = true;
-        if (employeeState.value.internal_id_exists === false) {
+        if (identifierStatus.value.internal_id_exists === false) {
             message.value = "The id you entered does not exist in the system.";
+            showModal.value = true;
         }
-        else if (employeeState.value.email_exists === false) {
+        else if (identifierStatus.value.email_exists === false) {
             message.value = "The email you entered does not exist in the system.";
+            showModal.value = true;
         }
+    }
+});
+watch(emailCodeSent, (newValue) => {
+    headerText.value = "Verification code";
+    if (newValue) {
+        message.value = "A verification code has been sent to your email.";
+        showModal.value = true;
+    }
+    else {
+        message.value = "An error occurred while sending the verification code.";
+        showModal.value = true;
     }
 });
 </script>

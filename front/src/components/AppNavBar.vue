@@ -19,7 +19,7 @@ import { useMenuStore } from '@/stores/menu.ts';
 const menuStore = useMenuStore();
 
 const showBackButton = computed(() => {
-    return menuStore.informationChoice || menuStore.codeChoice || menuStore.helpChoice;
+    return menuStore.findEmployeeChoice || menuStore.codeChoice || menuStore.helpChoice;
 });
 const helpChoice = (): void => {
     menuStore.setHelpChoice(true);
