@@ -9,7 +9,7 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     id: UUID | None = Field(default=None, primary_key=True)
     hashed_password: str
-    roles: str = Field(default="user.create user:own user:own.write websockets")
+    roles: str = Field(default="")
 
 
 class UserCreate(UserBase):
@@ -18,3 +18,7 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: UUID
+
+
+class UserRolesUpdate(SQLModel):
+    roles: str
