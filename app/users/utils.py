@@ -1,14 +1,20 @@
-import os
-from uuid import uuid4
-from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
-from app.database import get_session
-from app.users.services import UserService
-from app.users.models import User, UserCreate
 from app.database import engine
-
-SUPER_PASSWORD: str = os.getenv("SUPERUSER_PASSWORD")  # type: ignore
+from app.users.services import UserService, UserAdminService
+from app.users.models import UserCreate
+from app.users.schemas import UserAttribute
 
 
 def create_superuser():
-    pass
+    session: Session = Session(engine)
+    service = UserService(session)
+    admin_user: UserCreate = UserCreate(
+        username="admin",
+        password="secret",
+    )
+    service.create_user(admin_user)
+
+    admin_service = UserAdminService(session)
+    admin_service.update_user_roles_by_attribute(
+        UserAttribute.USERNAME, "admin", "admin"
+    )
