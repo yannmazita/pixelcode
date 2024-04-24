@@ -4,7 +4,8 @@ Print QR codes to authorized users.
 
 ## Installing
 
-If you only plan on running the Docker containers you can directly jump to [Running using Docker](#using-docker).
+If you only plan on running the Docker containers you can directly jump to [Running using Docker](#using-docker) after
+having [set up your environment variables](#environment).
 
 ### User interface
 
@@ -22,6 +23,16 @@ poetry install
 
 ## Running
 
+### Environment
+In `.env.example` :
+- SMPT_* variables define settings for the emails service. Failing to update these values will not allow you to send emails.
+- `ALGORITHM` and `SECRET_KEY` keys are used to sign JWT tokens.
+- Change the value of `SECRET_KEY` to a randomly generated key using for example:
+```commandline
+openssl rand -hex 32
+```
+- `ORIGINS` and `VITE_API_URL` keys define respectively the URLs where the user interface and the API are accessible.
+
 ### Using Docker
 Attention, update `.env.example` with your environment variables. Do not change the file name.
 Both frontend and backend are dockerized. To start them, run in the project directory:
@@ -35,15 +46,7 @@ docker compose run -d [--build] <frontend | backend>
 The application is served to `localhost:5173` .
 
 ### From source
-
-#### Environment
-Create a `.env` file at the root of the cloned repository. See `.env.example` for an example.
-The `ALGORITHM` and `SECRET_KEY` keys are used to sign JWT tokens.
-Change the value of `SECRET_KEY` to a randomly generated key using for example:
-```commandline
-openssl rand -hex 32
-```
-`ORIGINS` and `VITE_API_URL` keys define respectively the URLs where the user interface and the API are accessible.
+Attention, copy `.env.example` to `.env` with your environment variables.
 
 #### User interface
 
