@@ -5,8 +5,8 @@ from sqlmodel import Session
 from app.database import get_session
 from app.auth.dependencies import validate_token
 from app.auth.models import TokenData
-from app.users.models import UserCreate, UserRead
-from app.users.services import UserService
+from app.users.models import UserCreate, UserRead, UserRolesUpdate
+from app.users.services import UserService, UserAdminService
 from app.users.schemas import UserAttribute
 
 router = APIRouter(
@@ -168,6 +168,50 @@ async def delete_user_by_username(
         raise e
     except Exception as e:
         print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.patch("/update-roles/{id}", response_model=UserRead)
+async def update_user_roles_by_id(
+    id: UUID,
+    roles_data: UserRolesUpdate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    admin_service = UserAdminService(session)
+    try:
+        updated_user = admin_service.update_user_roles_by_attribute(
+            UserAttribute.ID, str(id), str(roles_data)
+        )
+        return updated_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.patch("/update-roles/{username}", response_model=UserRead)
+async def update_user_roles_by_username(
+    username: str,
+    roles_data: UserRolesUpdate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    admin_service = UserAdminService(session)
+    try:
+        updated_user = admin_service.update_user_roles_by_attribute(
+            UserAttribute.USERNAME, str(username), str(roles_data)
+        )
+        return updated_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
