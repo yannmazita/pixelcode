@@ -18,3 +18,7 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: UUID
+
+
+class UserRolesUpdate(SQLModel):
+    roles: str
