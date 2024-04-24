@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlmodel import Session
 from app.database import engine
 from app.users.services import UserService, UserAdminService
@@ -12,7 +13,10 @@ def create_superuser():
         username="admin",
         password="secret",
     )
-    service.create_user(admin_user)
+    try:
+        service.create_user(admin_user)
+    except HTTPException as e:
+        pass
 
     admin_service = UserAdminService(session)
     admin_service.update_user_roles_by_attribute(
