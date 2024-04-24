@@ -14,6 +14,7 @@ from app.employees.models import (
     EmployeeRead,
     EmployeeStateRead,
 )
+from app.employees.schemas import EmployeeAttribute, EmployeeStateAttribute
 from app.employees.services import EmployeeAdminService, EmployeeService
 
 router = APIRouter(
@@ -30,9 +31,13 @@ async def send_verification_email(
 ):
     service = EmployeeService(session, email_service)
     if employee_identifier.internal_id:
-        employee = service.get_employee_by_internal_id(employee_identifier.internal_id)
+        employee = service.get_employee_by_attribute(
+            EmployeeAttribute.INTERNAL_ID, employee_identifier.internal_id
+        )
     else:
-        employee = service.get_employee_by_email(employee_identifier.email)
+        employee = service.get_employee_by_attribute(
+            EmployeeAttribute.EMAIL, str(employee_identifier.email)
+        )
     return service.generate_and_send_email(employee)
 
 
@@ -64,7 +69,9 @@ async def get_employee_by_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.get_employee_by_id(id)
+        employee = admin_service.get_employee_by_attribute(
+            EmployeeAttribute.ID, str(id)
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -84,7 +91,9 @@ async def get_employee_by_internal_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.get_employee_by_internal_id(internal_id)
+        employee = admin_service.get_employee_by_attribute(
+            EmployeeAttribute.INTERNAL_ID, internal_id
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -104,7 +113,9 @@ async def get_employee_by_email(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.get_employee_by_email(email)
+        employee = admin_service.get_employee_by_attribute(
+            EmployeeAttribute.EMAIL, email
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -144,7 +155,9 @@ async def update_employee_by_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        updated_employee = admin_service.update_employee_by_id(id, employee)
+        updated_employee = admin_service.update_employee_by_attribute(
+            EmployeeAttribute.ID, str(id), employee
+        )
         return updated_employee
     except HTTPException as e:
         raise e
@@ -165,8 +178,8 @@ async def update_employee_by_internal_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        updated_employee = admin_service.update_employee_by_internal_id(
-            internal_id, employee
+        updated_employee = admin_service.update_employee_by_attribute(
+            EmployeeAttribute.INTERNAL_ID, internal_id, employee
         )
         return updated_employee
     except HTTPException as e:
@@ -188,7 +201,9 @@ async def update_employee_by_email(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        updated_employee = admin_service.update_employee_by_email(email, employee)
+        updated_employee = admin_service.update_employee_by_attribute(
+            EmployeeAttribute.EMAIL, email, employee
+        )
         return updated_employee
     except HTTPException as e:
         raise e
@@ -208,7 +223,9 @@ async def delete_employee_by_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.delete_employee_by_id(id)
+        employee = admin_service.delete_employee_by_attribute(
+            EmployeeAttribute.ID, str(id)
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -228,7 +245,9 @@ async def delete_employee_by_internal_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.delete_employee_by_internal_id(internal_id)
+        employee = admin_service.delete_employee_by_attribute(
+            EmployeeAttribute.INTERNAL_ID, internal_id
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -248,7 +267,9 @@ async def delete_employee_by_email(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee = admin_service.delete_employee_by_email(email)
+        employee = admin_service.delete_employee_by_attribute(
+            EmployeeAttribute.EMAIL, email
+        )
         return employee
     except HTTPException as e:
         raise e
@@ -268,7 +289,9 @@ async def get_employee_state_by_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee_state = admin_service.get_employee_state_by_id(id)
+        employee_state = admin_service.get_employee_state_by_attribute(
+            EmployeeStateAttribute.ID, str(id)
+        )
         return employee_state
     except HTTPException as e:
         raise e
@@ -307,7 +330,9 @@ async def delete_employee_state_by_id(
 ):
     admin_service = EmployeeAdminService(session)
     try:
-        employee_state = admin_service.delete_employee_state_by_id(id)
+        employee_state = admin_service.delete_employee_state_by_attribute(
+            EmployeeStateAttribute.ID, str(id)
+        )
         return employee_state
     except HTTPException as e:
         raise e

@@ -1,16 +1,16 @@
 import hashlib
 from fastapi import HTTPException, status
-from pydantic import EmailStr
 import qrcode
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
-from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from app.employees.models import (
     Employee,
     EmployeeCreate,
     EmployeeState,
 )
+from app.employees.schemas import EmployeeAttribute, EmployeeStateAttribute
 from app.emails.services import EmailService
 
 
@@ -28,44 +28,95 @@ class EmployeeServiceBase:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_employee_by_internal_id(self, internal_id: str) -> Employee:
+    def get_employee_by_attribute(
+        self, attribute: EmployeeAttribute, value: str
+    ) -> Employee:
         """
-        Retrieve an employee's identity information from the database using their employee ID.
-
+        Retrieve an employee's identity information from the database using an attribute.
         Args:
-            internal_id: The employee ID of the employee.
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
         Returns:
             The employee's identity information.
         """
         try:
             employee = self.session.exec(
-                select(Employee).where(Employee.internal_id == internal_id)
+                select(Employee).where(getattr(Employee, attribute.value) == value)
             ).one()
             return employee
         except NoResultFound:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee with given ID does not exist",
+                detail=f"Employee with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple employees found with {attribute.value} = {value}",
             )
 
-    def get_employee_by_email(self, email: EmailStr | None) -> Employee:
+    def update_employee_by_attribute(
+        self, attribute: EmployeeAttribute, value: str, employee: EmployeeCreate
+    ) -> Employee:
         """
-        Retrieve an employee's identity information from the database using their email.
-
+        Update an employee's information in the database using an attribute.
         Args:
-            email: The email of the employee.
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+            employee: The updated employee information.
         Returns:
-            The employee's identity information.
+            The updated employee.
+        """
+        try:
+            db_employee = self.session.exec(
+                select(Employee).where(getattr(Employee, attribute.value) == value)
+            ).one()
+            db_employee.internal_id = employee.internal_id
+            db_employee.email = employee.email
+            db_employee.code_to_print = employee.code_to_print
+            db_employee.surname = employee.surname
+            db_employee.firstname = employee.firstname
+            self.session.add(db_employee)
+            self.session.commit()
+            return db_employee
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple employees found with {attribute.value} = {value}",
+            )
+
+    def delete_employee_by_attribute(
+        self, attribute: EmployeeAttribute, value: str
+    ) -> Employee:
+        """
+        Delete an employee from the database using an attribute.
+        Args:
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+        Returns:
+            The removed employee.
         """
         try:
             employee = self.session.exec(
-                select(Employee).where(Employee.email == email)
+                select(Employee).where(getattr(Employee, attribute.value) == value)
             ).one()
+            self.session.delete(employee)
+            self.session.commit()
             return employee
         except NoResultFound:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee with given email does not exist",
+                detail=f"Employee with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple employees found with {attribute.value} = {value}",
             )
 
     def create_employee_state(self, employee: Employee) -> EmployeeState:
@@ -256,199 +307,101 @@ class EmployeeAdminService(EmployeeServiceBase):
         ).all()
         return employees
 
-    def get_employee_by_id(self, id: UUID) -> Employee:
+    def get_employee_state_by_attribute(
+        self, attribute: EmployeeStateAttribute, value: str
+    ) -> EmployeeState:
         """
-        Retrieve an employee's identity information from the database using their database ID.
+        Retrieve an employee's state information from the database using an attribute.
 
         Args:
-            id: The database ID of the employee.
-        Returns:
-            The employee's identity information.
-        """
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def update_employee_by_id(self, id: UUID, employee: EmployeeCreate) -> Employee:
-        """
-        Update an employee's information in the database using their database ID.
-        Args:
-            id: The database ID of the employee.
-            employee: The updated employee information.
-        Returns:
-            The updated employee.
-        """
-        try:
-            db_employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            db_employee.internal_id = employee.internal_id
-            db_employee.email = employee.email
-            db_employee.code_to_print = employee.code_to_print
-            db_employee.surname = employee.surname
-            db_employee.firstname = employee.firstname
-            self.session.add(db_employee)
-            self.session.commit()
-            return db_employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def update_employee_by_internal_id(
-        self, internal_id: str, employee: EmployeeCreate
-    ) -> Employee:
-        """
-        Update an employee's information in the database using their internal ID.
-        Args:
-            internal_id: The internal ID of the employee.
-            employee: The updated employee information.
-        Returns:
-            The updated employee.
-        """
-        try:
-            db_employee = self.session.exec(
-                select(Employee).where(Employee.internal_id == internal_id)
-            ).one()
-            db_employee.internal_id = employee.internal_id
-            db_employee.email = employee.email
-            db_employee.code_to_print = employee.code_to_print
-            db_employee.surname = employee.surname
-            db_employee.firstname = employee.firstname
-            self.session.add(db_employee)
-            self.session.commit()
-            return db_employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def update_employee_by_email(
-        self, email: EmailStr, employee: EmployeeCreate
-    ) -> Employee:
-        """
-        Update an employee's information in the database using their email.
-        Args:
-            email: The email of the employee.
-            employee: The updated employee information.
-        Returns:
-            The updated employee.
-        """
-        try:
-            db_employee = self.session.exec(
-                select(Employee).where(Employee.email == email)
-            ).one()
-            db_employee.internal_id = employee.internal_id
-            db_employee.email = employee.email
-            db_employee.code_to_print = employee.code_to_print
-            db_employee.surname = employee.surname
-            db_employee.firstname = employee.firstname
-            self.session.add(db_employee)
-            self.session.commit()
-            return db_employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def delete_employee_by_id(self, id: UUID) -> Employee:
-        """
-        Delete an employee from the database using their database ID.
-
-        Args:
-            id: The database ID of the employee.
-        Returns:
-            The removed employee.
-        """
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.id == id)
-            ).one()
-            self.session.delete(employee)
-            self.session.commit()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def delete_employee_by_internal_id(self, internal_id: str) -> Employee:
-        """
-        Delete an employee from the database using their internal ID.
-
-        Args:
-            internal_id: The internal ID of the employee.
-        Returns:
-            The removed employee.
-        """
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.internal_id == internal_id)
-            ).one()
-            self.session.delete(employee)
-            self.session.commit()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def delete_employee_by_email(self, email: EmailStr) -> Employee:
-        """
-        Delete an employee from the database using their email.
-        Args:
-            email: The email of the employee.
-        Returns:
-            The removed employee.
-        """
-        try:
-            employee = self.session.exec(
-                select(Employee).where(Employee.email == email)
-            ).one()
-            self.session.delete(employee)
-            self.session.commit()
-            return employee
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee does not exist",
-            )
-
-    def get_employee_state_by_id(self, id: UUID) -> EmployeeState:
-        """
-        Retrieve an employee's state information from the database using their database ID.
-
-        Args:
-            id: The database ID of the employee.
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
         Returns:
             The employee's state information.
         """
         try:
             state = self.session.exec(
-                select(EmployeeState).where(EmployeeState.id == id)
+                select(EmployeeState).where(
+                    getattr(EmployeeState, attribute.value) == value
+                )
             ).one()
             return state
         except NoResultFound:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee state does not exist",
+                detail=f"Employee state with {attribute.value} = {value} does not exist",
             )
         except MultipleResultsFound:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple states found for employee",
+                detail=f"Multiple states found with {attribute.value} = {value}",
+            )
+
+    def update_employee_state_by_attribute(
+        self, attribute: EmployeeStateAttribute, value: str, state: EmployeeState
+    ) -> EmployeeState:
+        """
+        Update an employee's state information in the database using an attribute.
+
+        Args:
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+            state: The updated state information.
+        Returns:
+            The updated state information.
+        """
+        try:
+            db_state = self.session.exec(
+                select(EmployeeState).where(
+                    getattr(EmployeeState, attribute.value) == value
+                )
+            ).one()
+            db_state.email_code_validated = state.email_code_validated
+            db_state.email_code_sent = state.email_code_sent
+            self.session.add(db_state)
+            self.session.commit()
+            return db_state
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee state with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple states found with {attribute.value} = {value}",
+            )
+
+    def delete_employee_state_by_attribute(
+        self, attribute: EmployeeStateAttribute, value: str
+    ) -> EmployeeState:
+        """
+        Delete an employee state from the database using an attribute.
+
+        Args:
+            attribute: The attribute to be used for retrieval.
+            value: The value of the attribute.
+        Returns:
+            The removed employee state.
+        """
+        try:
+            state = self.session.exec(
+                select(EmployeeState).where(
+                    getattr(EmployeeState, attribute.value) == value
+                )
+            ).one()
+            self.session.delete(state)
+            self.session.commit()
+            return state
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee state with {attribute.value} = {value} does not exist",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Multiple states found with {attribute.value} = {value}",
             )
 
     def get_employee_states(self, offset: int = 0, limit: int = 100):
@@ -465,32 +418,6 @@ class EmployeeAdminService(EmployeeServiceBase):
             select(EmployeeState).offset(offset).limit(limit)
         ).all()
         return states
-
-    def delete_employee_state_by_id(self, id: UUID) -> EmployeeState:
-        """
-        Delete an employee state from the database using their database ID.
-        Args:
-            id: The database ID of the employee state.
-        Returns:
-            The removed employee state.
-        """
-        try:
-            state = self.session.exec(
-                select(EmployeeState).where(EmployeeState.id == id)
-            ).one()
-            self.session.delete(state)
-            self.session.commit()
-            return state
-        except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employee state does not exist",
-            )
-        except MultipleResultsFound:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple states found for employee",
-            )
 
 
 class EmployeeService(EmployeeServiceBase):
@@ -517,7 +444,9 @@ class EmployeeService(EmployeeServiceBase):
             The computed email code.
         """
         prefix = employee.internal_id[-2:]
-        email_code = prefix + hashlib.md5(employee.internal_id.encode()).hexdigest()[-4:]
+        email_code = (
+            prefix + hashlib.md5(employee.internal_id.encode()).hexdigest()[-4:]
+        )
         return email_code
 
     def generate_and_send_email(self, employee: Employee) -> EmployeeState:
