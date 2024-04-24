@@ -25,7 +25,7 @@ poetry install
 
 ### Environment
 In `.env.example` :
-- SMPT_* variables define settings for the emails service. Failing to update these values will not allow you to send emails.
+- `SMPT_*` variables define settings for the emails service. Failing to update these values will not allow you to send emails.
 - `ALGORITHM` and `SECRET_KEY` keys are used to sign JWT tokens.
 - Change the value of `SECRET_KEY` to a randomly generated key using for example:
 ```commandline
@@ -43,7 +43,7 @@ or
 ```commandline
 docker compose run -d [--build] <frontend | backend>
 ```
-The application is served to `localhost:5173` .
+The application is served to `localhost:5173` by default.
 
 ### From source
 Attention, copy `.env.example` to `.env` with your environment variables.
