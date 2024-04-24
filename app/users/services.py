@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from uuid import uuid4
+from uuid import uuid4, UUID
 from sqlmodel import Session, select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from app.auth.services import get_password_hash
@@ -160,3 +160,32 @@ class UserAdminService(UserServiceBase):
 
     def __init__(self, session: Session):
         super().__init__(session)
+
+    def update_user_roles_by_attribute(
+        self, attribute: UserAttribute, value: str, new_roles: str
+    ) -> User:
+        """
+        Update a user's roles using a specified attribute.
+        Args:
+            attribute: The attribute to filter by.
+            value: The value to filter by.
+            new_roles: The new roles.
+        Returns:
+            The updated user.
+        """
+        try:
+            user = self.get_user_by_attribute(attribute, value)
+            user.roles = new_roles
+            self.session.add(user)
+            self.session.commit()
+            return user
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+        except MultipleResultsFound:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Multiple users found with the same attribute.",
+            )
