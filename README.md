@@ -68,8 +68,6 @@ uvicorn app.main:api --reload
 `Python`, `FastAPI` backend, served through `uvicorn`. Uvicorn server running as backend Docker service.
 
 ## To do
-- Frontend: success/failure screens
-- Backend: Database error handling
 - Backend: Printing to Star Micronics SK1-31
 - Backend: Cleanup qr codes once they are printed
 - Admin dashboard
