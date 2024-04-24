@@ -127,6 +127,18 @@ class UserServiceBase:
                 detail="Multiple users found with the same attribute.",
             )
 
+    def get_users(self, offset: int = 0, limit: int = 100):
+        """
+        Get all users.
+        Args:
+            offset: The number of users to skip.
+            limit: The maximum number of users to return.
+        Returns:
+            The list of users.
+        """
+        users = self.session.exec(select(User).offset(offset).limit(limit)).all()
+        return users
+
 
 class UserService(UserServiceBase):
     """
