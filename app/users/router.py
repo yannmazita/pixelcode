@@ -1,16 +1,13 @@
 from typing import Annotated
-
-from fastapi import Depends, APIRouter
-
-from app.users.dependencies import (
-    get_user,
-    get_users,
-    get_own_user,
-    create_new_user,
-    remove_user,
-    remove_own_user,
-)
-from app.users.models import User, UserRead
+from uuid import UUID
+from fastapi import Depends, APIRouter, HTTPException, Security, status
+from sqlmodel import Session
+from app.database import get_session
+from app.auth.dependencies import validate_token
+from app.auth.models import TokenData
+from app.users.models import UserCreate, UserRead
+from app.users.services import UserService
+from app.users.schemas import UserAttribute
 
 router = APIRouter(
     prefix="/users",
@@ -19,32 +16,165 @@ router = APIRouter(
 
 
 @router.post("/", response_model=UserRead)
-async def create_user(user: Annotated[User, Depends(create_new_user)]):
-    return user
-
-
-@router.get("/id={user_id}", response_model=UserRead)
-async def read_user(user: User = Depends(get_user)):
-    return user
-
-
-@router.get("/", response_model=list[UserRead])
-async def read_users(
-    users: Annotated[list[User], Depends(get_users)],
+async def create_user(
+    user: UserCreate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Session = Depends(get_session),
 ):
-    return users
+    service = UserService(session)
+    try:
+        new_user = service.create_user(user)
+        return new_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
 
-@router.get("/me", response_model=UserRead)
-async def read_own_user(current_user: Annotated[User, Depends(get_own_user)]):
-    return current_user
+@router.get("/id/{id}", response_model=UserRead)
+async def get_user_by_id(
+    id: UUID,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        user = service.get_user_by_attribute(UserAttribute.ID, str(id))
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
 
-@router.delete("/id={user_id}", response_model=UserRead)
-async def delete_user(user: User = Depends(remove_user)):
-    return user
+@router.get("/username/{username}", response_model=UserRead)
+async def get_user_by_username(
+    username: str,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        user = service.get_user_by_attribute(UserAttribute.USERNAME, username)
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
 
-@router.delete("/me", response_model=UserRead)
-async def delete_own_user(user: User = Depends(remove_own_user)):
-    return user
+@router.get("/all", response_model=list[UserRead])
+async def get_all_users(
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        users = service.get_users()
+        return users
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.put("/id/{id}", response_model=UserRead)
+async def update_user_by_id(
+    id: UUID,
+    user: UserCreate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        updated_user = service.update_user_by_attribute(UserAttribute.ID, str(id), user)
+        return updated_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.put("/username/{username}", response_model=UserRead)
+async def update_user_by_username(
+    username: str,
+    user: UserCreate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        updated_user = service.update_user_by_attribute(
+            UserAttribute.USERNAME, str(username), user
+        )
+        return updated_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.delete("/id/{id}", response_model=UserRead)
+async def delete_user_by_id(
+    id: UUID,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        user = service.delete_user_by_attribute(UserAttribute.ID, str(id))
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.delete("/username/{username}", response_model=UserRead)
+async def delete_user_by_username(
+    username: str,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        user = service.delete_user_by_attribute(UserAttribute.USERNAME, username)
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+# @router.get("/me", response_model=UserRead)
+
+
+# @router.delete("/me", response_model=UserRead)
