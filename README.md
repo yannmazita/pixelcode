@@ -74,7 +74,7 @@ The API documentation is available at `localhost:8000/docs` by default.
 `Python`, `FastAPI` backend, served through `uvicorn`. Uvicorn server running as backend Docker service.
 
 ## To do
-- Backend: Printing to Star Micronics SK1-31
-- Backend: Cleanup qr codes once they are printed
-- Admin dashboard
-- Cleanup usage of environment variables
+- Backend: Printing using cups
+- Backend: Cleanup qr codes once they are printed, qr code route
+- Frontend: Admin dashboard
+- More efficient use of environment variables on the backend
