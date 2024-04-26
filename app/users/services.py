@@ -1,5 +1,4 @@
-from fastapi import HTTPException, status
-from uuid import uuid4, UUID
+from uuid import uuid4
 from sqlmodel import Session, select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from app.auth.services import get_password_hash
@@ -8,7 +7,7 @@ from app.users.exceptions import (
     multiple_users_found,
     user_already_exists,
 )
-from app.users.models import User, UserCreate
+from app.users.models import User, UserCreate, UserRolesUpdate
 from app.users.schemas import UserAttribute
 
 
@@ -86,6 +85,7 @@ class UserServiceBase:
                 setattr(user_db, key, value)
             self.session.add(user_db)
             self.session.commit()
+            self.session.refresh(user_db)
             return user_db
         except NoResultFound:
             raise user_not_found
@@ -103,6 +103,7 @@ class UserServiceBase:
         try:
             self.session.delete(user)
             self.session.commit()
+            self.session.refresh(user)
         except NoResultFound:
             raise user_not_found
         return user
@@ -161,7 +162,7 @@ class UserAdminService(UserServiceBase):
         super().__init__(session)
 
     def update_user_roles_by_attribute(
-        self, attribute: UserAttribute, value: str, new_roles: str
+        self, attribute: UserAttribute, value: str, new_roles: UserRolesUpdate
     ) -> User:
         """
         Update a user's roles using a specified attribute.
@@ -174,9 +175,10 @@ class UserAdminService(UserServiceBase):
         """
         try:
             user = self.get_user_by_attribute(attribute, value)
-            user.roles = new_roles
+            user.roles = new_roles.roles
             self.session.add(user)
             self.session.commit()
+            self.session.refresh(user)
             return user
         except NoResultFound:
             raise user_not_found

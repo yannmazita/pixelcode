@@ -78,6 +78,7 @@ class EmployeeServiceBase:
             db_employee.firstname = employee.firstname
             self.session.add(db_employee)
             self.session.commit()
+            self.session.refresh(db_employee)
             return db_employee
         except NoResultFound:
             raise HTTPException(
@@ -147,6 +148,7 @@ class EmployeeServiceBase:
         db_state = EmployeeState.model_validate(new_state)
         self.session.add(db_state)
         self.session.commit()
+        self.session.refresh(db_state)
         return db_state
 
     def get_employee_state(self, employee: Employee) -> EmployeeState:
@@ -197,6 +199,7 @@ class EmployeeServiceBase:
             db_state.email_code_sent = state.email_code_sent
             self.session.add(db_state)
             self.session.commit()
+            self.session.refresh(db_state)
             return db_state
         except NoResultFound:
             raise HTTPException(
@@ -269,6 +272,7 @@ class EmployeeAdminService(EmployeeServiceBase):
 
         self.session.add(db_employee)
         self.session.commit()
+        self.session.refresh(db_employee)
 
         return db_employee
 
@@ -360,6 +364,7 @@ class EmployeeAdminService(EmployeeServiceBase):
             db_state.email_code_sent = state.email_code_sent
             self.session.add(db_state)
             self.session.commit()
+            self.session.refresh(db_state)
             return db_state
         except NoResultFound:
             raise HTTPException(

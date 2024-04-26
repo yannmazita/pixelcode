@@ -44,6 +44,7 @@ or
 docker compose run -d [--build] <frontend | backend>
 ```
 The application is served to `localhost:5173` by default.
+The API documentation is available at `localhost:8000/docs` by default.
 
 ### From source
 Attention, copy `.env.example` to `.env` with your environment variables.
@@ -54,6 +55,7 @@ Start the vite development server using:
 ```commandline
 npm run dev
 ```
+The application is served to `localhost:5173` by default.
 
 #### Application server
 Activate the virtual environment where the server is installed. For example using Poetry and in the project root:
@@ -64,6 +66,7 @@ Then run:
 ```commandline
 uvicorn app.main:api --reload
 ```
+The API documentation is available at `localhost:8000/docs` by default.
 
 ## Details
 
@@ -73,6 +76,5 @@ uvicorn app.main:api --reload
 ## To do
 - Backend: Printing to Star Micronics SK1-31
 - Backend: Cleanup qr codes once they are printed
-- Backend: Forbid users with admin role to set non-existent roles
 - Admin dashboard
 - Cleanup usage of environment variables
