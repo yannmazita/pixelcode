@@ -1,6 +1,6 @@
 # pixelcode
 
-Print QR codes to authenticated users.
+Kiosk application to print QR codes to authenticated users.
 
 The user first has to input their employee identifier (email or internal ID) so as to verify their identity. If the identifier is known, a verification code is sent to their email address.
 Upon verification of the email address a unique QRCode is printed to them.
