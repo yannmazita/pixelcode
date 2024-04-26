@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from pydantic import ValidationError
 
 from app.dependencies import get_user_by_username
+from app.auth.config import OAUTH_SCOPES
 from app.auth.models import TokenData
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -14,20 +15,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="login",
-    scopes={
-        "user.create": "The ability to create a new user.",
-        "user:own": "Read only access to the current user's information.",
-        "user:own.write": "The ability to change the current user's information.",
-        "user:others": "Read only access to other users' information.",
-        "user:others.write": "The ability to change other users' information.",
-        "employee.create": "The ability to create a new employee.",
-        "employee:own": "Read only access to the current employee's information.",
-        "employee:own.write": "The ability to change the current employee's information.",
-        "employee:others": "Read only access to other employees' information.",
-        "employee:others.write": "The ability to change other employees' information.",
-        "websockets": "Access to the websocket.",
-        "admin": "Full access to all information.",
-    },
+    scopes=OAUTH_SCOPES,
     auto_error=True,
 )
 
