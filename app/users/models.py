@@ -20,6 +20,7 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: UUID
+    roles: str
 
 
 class UserRolesUpdate(SQLModel, table=False):
@@ -33,5 +34,6 @@ class UserRolesUpdate(SQLModel, table=False):
     def validate_roles(self):
         valid_roles = set(OAUTH_SCOPES.keys())
         given_roles = set(self.roles.split())
+        print(f"{'#'*10} given_roles={given_roles}")
         if not given_roles.issubset(valid_roles):
             raise ValueError(f"Invalid roles: {given_roles - valid_roles}")

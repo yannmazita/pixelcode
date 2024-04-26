@@ -207,7 +207,7 @@ async def update_user_roles_by_username(
     admin_service = UserAdminService(session)
     try:
         updated_user = admin_service.update_user_roles_by_attribute(
-            UserAttribute.USERNAME, str(username), roles_data
+            UserAttribute.USERNAME, username, roles_data
         )
         return updated_user
     except HTTPException as e:

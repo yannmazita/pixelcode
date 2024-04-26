@@ -85,6 +85,7 @@ class UserServiceBase:
                 setattr(user_db, key, value)
             self.session.add(user_db)
             self.session.commit()
+            self.session.refresh(user_db)
             return user_db
         except NoResultFound:
             raise user_not_found
@@ -102,6 +103,7 @@ class UserServiceBase:
         try:
             self.session.delete(user)
             self.session.commit()
+            self.session.refresh(user)
         except NoResultFound:
             raise user_not_found
         return user
@@ -173,9 +175,10 @@ class UserAdminService(UserServiceBase):
         """
         try:
             user = self.get_user_by_attribute(attribute, value)
-            user.roles = str(new_roles)
+            user.roles = new_roles.roles
             self.session.add(user)
             self.session.commit()
+            self.session.refresh(user)
             return user
         except NoResultFound:
             raise user_not_found
