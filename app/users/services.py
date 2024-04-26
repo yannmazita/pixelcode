@@ -3,6 +3,11 @@ from uuid import uuid4, UUID
 from sqlmodel import Session, select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from app.auth.services import get_password_hash
+from app.users.exceptions import (
+    user_not_found,
+    multiple_users_found,
+    user_already_exists,
+)
 from app.users.models import User, UserCreate
 from app.users.schemas import UserAttribute
 
@@ -28,10 +33,7 @@ class UserServiceBase:
         """
         try:
             self.session.exec(select(User).where(User.username == user.username)).one()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this username already exists",
-            )
+            raise user_already_exists
         except NoResultFound:
             pass
 
@@ -60,15 +62,9 @@ class UserServiceBase:
                 select(User).where(getattr(User, attribute.value) == value)
             ).one()
         except MultipleResultsFound:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple users found with the same attribute.",
-            )
+            raise multiple_users_found
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise user_not_found
         return user
 
     def update_user_by_attribute(
@@ -92,15 +88,9 @@ class UserServiceBase:
             self.session.commit()
             return user_db
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise user_not_found
         except MultipleResultsFound:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple users found with the same attribute.",
-            )
+            raise multiple_users_found
 
     def delete_user(self, user: User) -> User:
         """
@@ -114,10 +104,7 @@ class UserServiceBase:
             self.session.delete(user)
             self.session.commit()
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise user_not_found
         return user
 
     def delete_user_by_attribute(self, attribute: UserAttribute, value: str) -> User:
@@ -135,15 +122,9 @@ class UserServiceBase:
             self.session.commit()
             return user
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise user_not_found
         except MultipleResultsFound:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple users found with the same attribute.",
-            )
+            raise multiple_users_found
 
     def get_users(self, offset: int = 0, limit: int = 100):
         """
@@ -198,12 +179,6 @@ class UserAdminService(UserServiceBase):
             self.session.commit()
             return user
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise user_not_found
         except MultipleResultsFound:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Multiple users found with the same attribute.",
-            )
+            raise multiple_users_found
