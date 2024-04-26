@@ -3,7 +3,7 @@
         <form @submit="onSubmit" method="post">
             <div class="flex justify-center">
                 <AppInput class="input input-bordered text-5xl w-full" v-model="userInput"></AppInput>
-                <div class="button text-4xl mx-2" @click="userInput = userInput?.slice(0, -1)">❌</div>
+                <div class="button text-4xl mx-2" @click="userInput = ''">❌</div>
             </div>
             <div class="flex justify-center">
                 <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
