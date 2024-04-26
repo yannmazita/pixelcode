@@ -19,12 +19,14 @@ router = APIRouter(tags=["tokens"])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
-    user = authenticate_user(form_data.username, form_data.password)
-    if user is None:
+    try:
+        user = authenticate_user(form_data.username, form_data.password)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

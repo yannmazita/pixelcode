@@ -34,6 +34,22 @@ class UserRolesUpdate(SQLModel, table=False):
     def validate_roles(self):
         valid_roles = set(OAUTH_SCOPES.keys())
         given_roles = set(self.roles.split())
-        print(f"{'#'*10} given_roles={given_roles}")
         if not given_roles.issubset(valid_roles):
             raise ValueError(f"Invalid roles: {given_roles - valid_roles}")
+
+
+class UserPasswordUpdate(SQLModel, table=False):
+    old_password: str
+    new_password: str
+    confirm_password: str
+
+    @validate_call
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.validate_passwords()
+
+    def validate_passwords(self):
+        if self.new_password != self.confirm_password:
+            raise ValueError("Passwords do not match")
+        if self.old_password == self.new_password:
+            raise ValueError("New password is the same as the old password")

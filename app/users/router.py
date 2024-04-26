@@ -6,7 +6,13 @@ from app.database import get_session
 from app.auth.dependencies import validate_token
 from app.auth.models import TokenData
 from app.users.dependencies import get_own_user
-from app.users.models import User, UserCreate, UserRead, UserRolesUpdate
+from app.users.models import (
+    User,
+    UserCreate,
+    UserPasswordUpdate,
+    UserRead,
+    UserRolesUpdate,
+)
 from app.users.services import UserService, UserAdminService
 from app.users.schemas import UserAttribute
 
@@ -240,3 +246,24 @@ async def delete_own_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+    return user
+
+
+@router.patch("/me/update-password", response_model=UserRead)
+async def update_own_password(
+    user: Annotated[User, Depends(get_own_user)],
+    password_data: UserPasswordUpdate,
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        service.update_user_password(user, password_data)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+    return user

@@ -1,13 +1,14 @@
 from uuid import uuid4
 from sqlmodel import Session, select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
-from app.auth.services import get_password_hash
+from app.auth.exceptions import incorrect_password
+from app.auth.services import get_password_hash, verify_password
 from app.users.exceptions import (
     user_not_found,
     multiple_users_found,
     user_already_exists,
 )
-from app.users.models import User, UserCreate, UserRolesUpdate
+from app.users.models import User, UserCreate, UserPasswordUpdate, UserRolesUpdate
 from app.users.schemas import UserAttribute
 
 
@@ -149,6 +150,23 @@ class UserService(UserServiceBase):
 
     def __init__(self, session: Session):
         super().__init__(session)
+
+    def update_user_password(
+        self, user: User, password_data: UserPasswordUpdate
+    ) -> None:
+        """
+        Update a user's password.
+        Args:
+            user: The user.
+            password_data: The new password data.
+        """
+        if not verify_password(password_data.old_password, user.hashed_password):
+            print(f"{'#'*10} Incorrect Password = {password_data.old_password}")
+            raise incorrect_password
+        else:
+            user.hashed_password = get_password_hash(password_data.new_password)
+            self.session.add(user)
+            self.session.commit()
 
 
 class UserAdminService(UserServiceBase):
