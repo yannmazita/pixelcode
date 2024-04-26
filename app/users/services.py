@@ -102,6 +102,24 @@ class UserServiceBase:
                 detail="Multiple users found with the same attribute.",
             )
 
+    def delete_user(self, user: User) -> User:
+        """
+        Delete a user.
+        Args:
+            user: The user to delete.
+        Returns:
+            The deleted user.
+        """
+        try:
+            self.session.delete(user)
+            self.session.commit()
+        except NoResultFound:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+        return user
+
     def delete_user_by_attribute(self, attribute: UserAttribute, value: str) -> User:
         """
         Delete a user using a specified attribute.
