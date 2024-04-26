@@ -1,8 +1,10 @@
 # pixelcode
 
 Print QR codes to authenticated users.
+
 The user first has to input their employee identifier (email or internal ID) so as to verify their identity. If the identifier is known, a verification code is sent to their email address.
 Upon verification of the email address a unique QRCode is printed to them.
+
 On server startup a default administrator user is created with a default password and the OAuth scope "admin".
 Users with the admin role can create new users and grant them finely grained roles which have already been defined.
 
@@ -19,6 +21,7 @@ The user interface can be installed using `npm`. Inside the `front` directory ru
 ```commandline
 npm install
 ```
+
 ### Application server
 
 Dependencies are defined in `pyproject.toml` and `requirements.txt`.
@@ -30,6 +33,7 @@ poetry install
 ## Running
 
 ### Environment
+
 In `.env.example` :
 - `SMPT_*` variables define settings for the emails service. Failing to update these values will not allow you to send emails.
 - `ALGORITHM` and `SECRET_KEY` keys are used to sign JWT tokens.
@@ -40,6 +44,7 @@ openssl rand -hex 32
 - `ORIGINS` and `VITE_API_URL` keys define respectively the URLs where the user interface and the API are accessible.
 
 ### Using Docker
+
 Attention, update `.env.example` with your environment variables. Do not change the file name.
 Both frontend and backend are dockerized. To start them, run in the project directory:
 ```commandline
@@ -53,6 +58,7 @@ The application is served to `localhost:5173` by default.
 The API documentation is available at `localhost:8000/docs` by default.
 
 ### From source
+
 Attention, copy `.env.example` to `.env` with your environment variables.
 
 #### User interface
@@ -64,6 +70,7 @@ npm run dev
 The application is served to `localhost:5173` by default.
 
 #### Application server
+
 Activate the virtual environment where the server is installed. For example using Poetry and in the project root:
 ```commandline
 poetry shell
@@ -80,6 +87,7 @@ The API documentation is available at `localhost:8000/docs` by default.
 `Python`, `FastAPI` backend, served through `uvicorn`. Uvicorn server running as backend Docker service.
 
 ## To do
+
 - Backend: Printing using cups
 - Backend: Cleanup qr codes once they are printed, qr code route
 - Frontend: Admin dashboard
