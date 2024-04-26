@@ -2,7 +2,7 @@
 
 Print QR codes to authenticated users.
 
-<img src="./docs/screen1.png" width="30%"></img> <img src="./docs/screen2.png" width="30%"></img> <img src="./docs/screen3.png" width="30%"></img>
+<img src="./docs/screen1.png" width="30%"></img> <img src="./docs/screen2.png" width="30%"></img> <img src="./docs/screen3.png" width="30%"></img> <img src="./docs/screen-api-1.png" width="30%"></img> <img src="./docs/screen-api-2.png" width="30%"></img>
 
 ## Installing
 
