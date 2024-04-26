@@ -3,10 +3,11 @@
         <form @submit="onSubmit" method="post">
             <div class="flex justify-center">
                 <AppInput class="input input-bordered text-5xl w-full" v-model="userInput"></AppInput>
-                <div class="text-4xl">❌</div>
+                <div class="button text-4xl mx-2" @click="userInput = userInput?.slice(0, -1)">❌</div>
             </div>
             <div class="flex justify-center">
-                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys" :additionalRows="otherRows">
+                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
+                    :additionalRows="otherRows">
                 </Keyboard>
             </div>
             <div class="flex justify-center">
@@ -58,7 +59,12 @@ const onSubmit = handleSubmit(async (values, { resetForm }) => {
 });
 
 const updateAppInput = (key: string) => {
-    userInput.value = userInput.value + key;
+    if (key === '⬅️') {
+        userInput.value = userInput.value?.slice(0, -1);
+    }
+    else {
+        userInput.value = userInput.value + key;
+    }
 };
 
 const keys = computed(() => {
