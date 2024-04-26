@@ -2,6 +2,10 @@
 
 Print QR codes to authenticated users.
 
+<img src="./docs/screen1.png" width="30%"></img>
+<img src="./docs/screen2.png" width="30%"></img>
+<img src="./docs/screen3.png" width="30%"></img>
+
 ## Installing
 
 If you only plan on running the Docker containers you can directly jump to [Running using Docker](#using-docker) after
