@@ -5,7 +5,8 @@ from sqlmodel import Session
 from app.database import get_session
 from app.auth.dependencies import validate_token
 from app.auth.models import TokenData
-from app.users.models import UserCreate, UserRead, UserRolesUpdate
+from app.users.dependencies import get_own_user
+from app.users.models import User, UserCreate, UserRead, UserRolesUpdate
 from app.users.services import UserService, UserAdminService
 from app.users.schemas import UserAttribute
 
@@ -218,7 +219,24 @@ async def update_user_roles_by_username(
         )
 
 
-# @router.get("/me", response_model=UserRead)
+@router.get("/me", response_model=UserRead)
+async def get_own_user(user: Annotated[User, Depends(get_own_user)]):
+    return user
 
 
-# @router.delete("/me", response_model=UserRead)
+@router.delete("/me", response_model=UserRead)
+async def delete_own_user(
+    user: Annotated[User, Depends(get_own_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    service = UserService(session)
+    try:
+        service.delete_user(user)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )

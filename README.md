@@ -1,6 +1,6 @@
 # pixelcode
 
-Print QR codes to authorized users.
+Print QR codes to authenticated users.
 
 ## Installing
 
