@@ -212,13 +212,15 @@ class EmployeeServiceBase:
                 detail="Multiple states found for employee",
             )
 
-    def init_and_check_employee_state(self, employee: Employee) -> EmployeeState:
+    def ensure_employee_state(self, employee: Employee) -> EmployeeState:
         """
-        Initialize the state for the given employee and check if it is valid.
+        Ensure that an employee state exists in the database.
+
+        This method checks if an employee state exists in the database, and creates one if it does not.
         Args:
-            employee: The employee for whom the state is to be initialized.
+            employee: The employee for whom the state is to be ensured.
         Returns:
-            The initialized state.
+            The employee state.
         """
         try:
             state = self.get_employee_state(employee)
@@ -462,7 +464,7 @@ class EmployeeService(EmployeeServiceBase):
         """
         email_code = self.compute_email_code(employee)
         email_message = self.email_service.create_email(employee.email, email_code)
-        state = self.init_and_check_employee_state(employee)
+        state = self.ensure_employee_state(employee)
 
         try:
             self.email_service.send_email(email_message, employee.email)
@@ -483,7 +485,7 @@ class EmployeeService(EmployeeServiceBase):
         Returns:
             The path to the created QR code.
         """
-        state = self.init_and_check_employee_state(employee)
+        state = self.ensure_employee_state(employee)
         if not state.email_code_validated:
             raise ValueError("Email code not validated for employee.")
         img = qrcode.make(employee.code_to_print)
@@ -501,7 +503,7 @@ class EmployeeService(EmployeeServiceBase):
             True if the email code is valid, False otherwise.
         """
         expected_code = self.compute_email_code(employee)
-        state = self.init_and_check_employee_state(employee)
+        state = self.ensure_employee_state(employee)
         if input_code == expected_code:
             state.email_code_validated = True
             self.update_employee_state(employee, state)
