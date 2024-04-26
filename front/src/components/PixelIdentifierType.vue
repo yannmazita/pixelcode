@@ -8,11 +8,15 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useMenuStore } from '@/stores/menu.ts';
 const menuStore = useMenuStore();
 
 onMounted(() => {
     menuStore.setIdentifierTypeEmail(true);
+});
+
+onUnmounted(() => {
+    menuStore.resetIdentifierChoices();
 });
 </script>
