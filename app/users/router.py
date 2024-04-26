@@ -174,7 +174,7 @@ async def delete_user_by_username(
         )
 
 
-@router.patch("/update-roles/{id}", response_model=UserRead)
+@router.patch("/update-roles/by-id/{id}", response_model=UserRead)
 async def update_user_roles_by_id(
     id: UUID,
     roles_data: UserRolesUpdate,
@@ -196,7 +196,7 @@ async def update_user_roles_by_id(
         )
 
 
-@router.patch("/update-roles/{username}", response_model=UserRead)
+@router.patch("/update-roles/by-username/{username}", response_model=UserRead)
 async def update_user_roles_by_username(
     username: str,
     roles_data: UserRolesUpdate,
