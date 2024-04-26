@@ -73,6 +73,5 @@ uvicorn app.main:api --reload
 ## To do
 - Backend: Printing to Star Micronics SK1-31
 - Backend: Cleanup qr codes once they are printed
-- Backend: Forbid users with admin role to set non-existent roles
 - Admin dashboard
 - Cleanup usage of environment variables
