@@ -104,7 +104,6 @@ class UserServiceBase:
         try:
             self.session.delete(user)
             self.session.commit()
-            self.session.refresh(user)
         except NoResultFound:
             raise user_not_found
         return user
