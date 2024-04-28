@@ -160,7 +160,6 @@ class UserService(UserServiceBase):
             password_data: The new password data.
         """
         if not verify_password(password_data.old_password, user.hashed_password):
-            print(f"{'#'*10} Incorrect Password = {password_data.old_password}")
             raise incorrect_password
         else:
             user.hashed_password = get_password_hash(password_data.new_password)
