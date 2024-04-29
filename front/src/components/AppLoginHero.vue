@@ -30,8 +30,11 @@
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/yup';
 import { object, string } from 'yup';
+import { useAuthenticationStore } from '@/stores/authentication.ts';
 import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
+
+const authenticationStore = useAuthenticationStore();
 
 const schema = toTypedSchema(
     object({
@@ -46,7 +49,13 @@ const [username] = defineField('username');
 const [password] = defineField('password');
 
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
-    console.log(values);
+    const data = new FormData();
+    data.append('username', values.username);
+    data.append('password', values.password);
+    data.append('scope',
+        'admin');
+    const response = await authenticationStore.loginUser(data);
     resetForm();
+    return response;
 });
 </script>
