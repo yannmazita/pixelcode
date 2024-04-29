@@ -1,5 +1,5 @@
 <template>
-    <label v-if="label" class="label-text">{{ label }}</label>
+    <label v-if="label" class="label-text mb-2">{{ label }}</label>
     <input v-model="model" v-bind="{ ...$attrs, ...classes }" />
 </template>
 <script setup lang="ts">
