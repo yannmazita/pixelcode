@@ -8,11 +8,12 @@
             <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
                 <form @submit="onSubmit" method="post" class="card-body bg-base-200">
                     <div class="form-control">
-                        <AppInput v-model="username" placeholder="username" class="input input-bordered"></AppInput>
+                        <AppInput v-model="username" placeholder="Your admin username" class="input input-bordered"
+                            :label="'Username'"></AppInput>
                     </div>
                     <div class="form-control">
-                        <AppInput v-model="password" placeholder="password" class="input input-bordered"
-                            type="password"></AppInput>
+                        <AppInput v-model="password" placeholder="Your password" class="input input-bordered"
+                            :label="'Password'" type="password"></AppInput>
                     </div>
                     <div class="form-control mt-6">
                         <AppButton :disabled="isSubmitting" type="submit" class="btn btn-primary text-sm">
