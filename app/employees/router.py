@@ -63,8 +63,10 @@ async def upload_csv(
             # implement batch processing instead, this is slow
             admin_service.create_new_employee(employee)
     except HTTPException as e:
+        session.rollback()
         raise e
     except Exception as e:
+        session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
