@@ -1,6 +1,14 @@
 from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    UploadFile,
+    HTTPException,
+    Security,
+    status,
+)
 from pydantic import EmailStr
 from sqlmodel import Session
 from app.auth.dependencies import validate_token
@@ -39,6 +47,27 @@ async def send_verification_email(
             EmployeeAttribute.EMAIL, str(employee_identifier.email)
         )
     return service.generate_and_send_email(employee)
+
+
+@router.post("/upload-csv")
+async def upload_csv(
+    file: UploadFile,
+    session: Annotated[Session, Depends(get_session)],
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+):
+    admin_service = EmployeeAdminService(session)
+    employees = await admin_service.parse_csv_file(file)
+
+    try:
+        for employee in employees:
+            # implement batch processing instead, this is slow
+            admin_service.create_new_employee(employee)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.post("/", response_model=EmployeeRead)
