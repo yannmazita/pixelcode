@@ -1,5 +1,8 @@
+import csv
 import hashlib
-from fastapi import HTTPException, status
+from io import TextIOWrapper
+from pathlib import Path
+from fastapi import HTTPException, UploadFile, status
 import qrcode
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
@@ -425,6 +428,33 @@ class EmployeeAdminService(EmployeeServiceBase):
             select(EmployeeState).offset(offset).limit(limit)
         ).all()
         return states
+
+    ######## danger #######
+    async def parse_csv_file(self, file: UploadFile) -> list[EmployeeCreate]:
+        """
+        Parse a CSV file containing employee information.
+        Args:
+            file: The CSV file to be parsed.
+        Returns:
+            A list of employee information.
+        """
+        employees = []
+        # Read the content as a string stream directly
+        contents = await file.read()
+        # Decode to string if necessary
+        content_string = contents.decode("utf-8")
+        reader = csv.DictReader(content_string.splitlines())
+        for row in reader:
+            employee = EmployeeCreate(
+                internal_id=row["internal_id"],
+                email=row["email"],
+                code_to_print=row["code_to_print"],
+                surname=row["surname"],
+                firstname=row["firstname"],
+            )
+            employees.append(employee)
+        await file.close()
+        return employees
 
 
 class EmployeeService(EmployeeServiceBase):
