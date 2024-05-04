@@ -1,10 +1,11 @@
-import { ref } from 'vue';
+import { ref, Ref } from 'vue';
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import { useAuthenticationStore } from '@/stores/authentication.ts';
+import { User, UserCreate } from '@/interfaces.ts';
 
-export const useUserStore = defineStore('users', () => {
-    const users = ref([]);
+export const useUserStore = defineStore('user', () => {
+    const users: Ref<User[]> = ref([]);
 
     async function getUsers(): Promise<void> {
         const authenticationStore = useAuthenticationStore();
@@ -17,7 +18,7 @@ export const useUserStore = defineStore('users', () => {
             console.error('Failed to get users:', error);
         }
     };
-    async function addUser(userData): Promise<void> {
+    async function addUser(userData: UserCreate): Promise<void> {
         const authenticationStore = useAuthenticationStore();
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/users/`, userData, {
@@ -28,7 +29,7 @@ export const useUserStore = defineStore('users', () => {
             console.error('Failed to add user:', error);
         }
     };
-    async function updateUser(id, userData): Promise<void> {
+    async function updateUser(id: string, userData: UserCreate): Promise<void> {
         const authenticationStore = useAuthenticationStore();
         try {
             await axios.put(`${import.meta.env.VITE_API_URL}/users/id/${id}`, userData, {
@@ -39,7 +40,7 @@ export const useUserStore = defineStore('users', () => {
             console.error('Failed to update user:', error);
         }
     };
-    async function deleteUser(id): Promise<void> {
+    async function deleteUser(id: string): Promise<void> {
         const authenticationStore = useAuthenticationStore();
         try {
             await axios.delete(`${import.meta.env.VITE_API_URL}/users/id/${id}`, {
