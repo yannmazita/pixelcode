@@ -1,10 +1,10 @@
 <template>
     <div class="flex justify-center">
-        <span class="text-3xl">Email</span>
+        <span class="text-2xl">Email</span>
         <input @click="menuStore.setIdentifierTypeEmail(true)" class="mx-2 radio radio-primary" type="radio" name="radio-2"
             checked />
         <input @click="menuStore.setIdentifierTypeID(true)" class="mx-2 radio radio-primary" type="radio" name="radio-2" />
-        <span class="text-3xl">id #</span>
+        <span class="text-2xl">id #</span>
     </div>
 </template>
 <script setup lang="ts">

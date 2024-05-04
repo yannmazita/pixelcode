@@ -2,11 +2,11 @@
     <div id="pixel-user-input-container" class="flex justify-center">
         <form @submit="onSubmit" method="post">
             <div class="flex justify-center">
-                <AppInput class="input input-bordered text-5xl w-full" v-model="userInput"></AppInput>
-                <div class="button text-4xl mx-2" @click="userInput = ''">❌</div>
+                <AppInput class="input input-bordered text-3xl xl:text-5xl w-full" v-model="userInput"></AppInput>
+                <div v-if="showKeyboards" class="button text-4xl mx-2" @click="userInput = ''">❌</div>
             </div>
             <div class="flex justify-center">
-                <Keyboard @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
+                <Keyboard v-if="showKeyboards" @keyPress="(key) => { updateAppInput(key); }" :keyboardKeys="keys"
                     :additionalRows="otherRows">
                 </Keyboard>
             </div>
@@ -19,7 +19,8 @@
 <script setup lang="ts">
 import { useMenuStore } from '@/stores/menu.ts';
 import { usePixelStore } from '@/stores/pixel.ts';
-import { computed } from 'vue';
+import { useSettingsStore } from '@/stores/settings.ts';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/yup';
 import { object, string } from 'yup';
@@ -29,6 +30,7 @@ import Keyboard from '@/components/AppVisualKeyboard.vue'
 
 const menuStore = useMenuStore();
 const pixelStore = usePixelStore();
+const settingsStore = useSettingsStore();
 
 const schema = toTypedSchema(
     object({
@@ -82,5 +84,16 @@ const otherRows = computed(() => {
     else if (menuStore.findEmployeeChoice) {
         return;
     }
+});
+const showKeyboards = computed(() => {
+    return pixelStore.kioskMode;
+});
+
+// Update screen size on component mount
+onMounted(() => {
+    window.addEventListener('resize', settingsStore.handleResize);
+});
+onUnmounted(() => {
+    window.removeEventListener('resize', settingsStore.handleResize);
 });
 </script>
