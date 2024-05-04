@@ -2,7 +2,7 @@
     <div id="pixel-user-input-container" class="flex justify-center">
         <form @submit="onSubmit" method="post">
             <div class="flex justify-center">
-                <AppInput class="input input-bordered text-3xl xl:text-5xl w-full" v-model="userInput"></AppInput>
+                <AppInput class="input input-bordered text-3xl xl:text-5xl max-w-[calc(100vw-60px)]" v-model="userInput"></AppInput>
                 <div v-if="showKeyboards" class="button text-4xl mx-2" @click="userInput = ''">❌</div>
             </div>
             <div class="flex justify-center">
