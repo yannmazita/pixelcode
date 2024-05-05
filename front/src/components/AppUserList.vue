@@ -1,38 +1,38 @@
 <template>
     <div id="app-user-list-container" class="flex justify-center">
-        <table id="app-user-list-table" class="border-collapse shadow-md">
+        <table id="app-user-list-table" class="w-full border-collapse shadow-md">
             <thead>
                 <tr class="bg-gray-100">
-                    <th class="p-2 border">ID</th>
-                    <th class="p-2 border">Username</th>
-                    <th class="p-2 border">Roles</th>
-                    <th class="p-2 border">Actions</th>
+                    <th class="py-1 border">ID</th>
+                    <th class="py-1 border">Username</th>
+                    <th class="py-1 border">Roles</th>
+                    <th class="py-1 border">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="user in userStore.users" :key="user.id">
-                    <td class="p-2 border">
+                    <td class="p-1 border">
                         <div class="flex justify-center">
                             <div class="tooltip" v-bind:data-tip="user.id">
                                 {{ truncateData(user.id) }}
                             </div>
                         </div>
                     </td>
-                    <td class="p-2 border">
+                    <td class="p-1 border">
                         <div class="flex justify-center">
                             <div class="tooltip" v-bind:data-tip="user.username">
                                 {{ truncateData(user.username) }}
                             </div>
                         </div>
                     </td>
-                    <td class="p-2 border">
+                    <td class="p-1 border">
                         <div class="flex justify-center">
                             <div class="tooltip" v-bind:data-tip="user.roles">
                                 {{ truncateData(user.roles) }}
                             </div>
                         </div>
                     </td>
-                    <td class="p-2 border">
+                    <td class="p-1 border">
                         <div class="flex justify-center">
                             <button @click="editUser(user.id)">📝</button>
                             <button @click="deleteUser(user.id)">❌</button>
