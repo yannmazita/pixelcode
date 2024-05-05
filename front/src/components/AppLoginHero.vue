@@ -1,5 +1,5 @@
 <template>
-    <div class="hero min-h-screen">
+    <div class="hero">
         <div class="hero-content flex-col lg:flex-row-reverse">
             <div class="text-center lg:text-left">
                 <h1 class="text-5xl font-bold">Login now!</h1>
