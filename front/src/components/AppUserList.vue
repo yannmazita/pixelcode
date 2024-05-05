@@ -42,17 +42,34 @@
             </tbody>
         </table>
     </div>
+    <div class="flex justify-center">
+        <button @click="getPreviousUsers">⬅️</button>
+        <button @click="getNextUsers">➡️</button>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, Ref, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user.ts';
 
 const userStore = useUserStore();
+const currentPage: Ref<number> = ref(0);
+const limit: number = 25;
 
 onMounted(() => {
-    userStore.getUsers();
+    userStore.getUsers(currentPage.value * limit, limit);
 });
+
+const getPreviousUsers = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+        userStore.getUsers(currentPage.value * limit, limit);
+    }
+};
+const getNextUsers = () => {
+    currentPage.value++;
+    userStore.getUsers(currentPage.value * limit, limit);
+};
 
 const truncateData = (data: string) => {
     if (data.length > 8) {

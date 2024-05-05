@@ -7,11 +7,12 @@ import { User, UserCreate } from '@/interfaces.ts';
 export const useUserStore = defineStore('user', () => {
     const users: Ref<User[]> = ref([]);
 
-    async function getUsers(): Promise<void> {
+    async function getUsers(offset: number = 0, limit: number = 25): Promise<void> {
         const authenticationStore = useAuthenticationStore();
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/users/all`, {
-                headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
+                headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` },
+                params: { offset, limit },
             });
             users.value = response.data;
         } catch (error) {

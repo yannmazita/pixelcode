@@ -83,10 +83,12 @@ async def get_user_by_username(
 async def get_all_users(
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
     session: Annotated[Session, Depends(get_session)],
+    offset: int = 0,
+    limit: int = 100,
 ):
     service = UserService(session)
     try:
-        users = service.get_users()
+        users = service.get_users(offset, limit)
         return users
     except HTTPException as e:
         raise e
