@@ -1,6 +1,8 @@
 <template>
+    <div class="grid grid-flow-row h-full max-w-full">
     <Login v-if="!authenticated"></Login>
     <AdminDashboard v-else></AdminDashboard>
+    </div>
 </template>
 
 <script setup lang="ts">

@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <div id="app-user-list-container" class="flex flex-col h-full">
+    <div class="flex flex-col h-full justify-between">
+        <div id="app-user-list-container" class="flex justify-center">
             <table id="app-user-list-table" class="w-full border-collapse shadow-md">
                 <thead>
                     <tr class="bg-gray-100">
