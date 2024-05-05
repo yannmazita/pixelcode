@@ -1,6 +1,6 @@
 <template>
     <div id="app-user-list-container" class="flex justify-center">
-        <table id="app-user-list-table" class="w-full border-collapse shadow-md">
+        <table id="app-user-list-table" class="border-collapse shadow-md">
             <thead>
                 <tr class="bg-gray-100">
                     <th class="py-1 border">ID</th>
@@ -42,7 +42,7 @@
             </tbody>
         </table>
     </div>
-    <div class="flex justify-center">
+    <div id="page-navigation-buttons" class="flex justify-center">
         <button @click="getPreviousUsers">⬅️</button>
         <button @click="getNextUsers">➡️</button>
     </div>
