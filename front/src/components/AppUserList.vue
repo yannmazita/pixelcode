@@ -1,6 +1,6 @@
 <template>
     <div id="app-user-list-container" class="flex justify-center">
-        <table id="app-user-list-table" class="border-collapse shadow-md">
+        <table id="app-user-list-table" class="w-full border-collapse shadow-md">
             <thead>
                 <tr class="bg-gray-100">
                     <th class="py-1 border">ID</th>
@@ -42,26 +42,25 @@
             </tbody>
         </table>
     </div>
-    <div id="page-navigation-buttons" class="flex justify-center">
-        <button @click="getPreviousUsers">⬅️</button>
-        <button @click="getNextUsers">➡️</button>
-    </div>
+    <PaginationBar @previousButtonClick="getPreviousUsers" @nextButtonClick="getNextUsers"></PaginationBar>
 </template>
 
 <script setup lang="ts">
 import { ref, Ref, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user.ts';
+import PaginationBar from '@/components/AppPaginationBar.vue';
 
 const userStore = useUserStore();
 const currentPage: Ref<number> = ref(0);
-const limit: number = 25;
+const limit: number = 14;
 
 onMounted(() => {
     userStore.getUsers(currentPage.value * limit, limit);
 });
 
+
 const getPreviousUsers = () => {
-    if (currentPage.value > 1) {
+    if (currentPage.value > 0) {
         currentPage.value--;
         userStore.getUsers(currentPage.value * limit, limit);
     }
