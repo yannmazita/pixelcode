@@ -89,6 +89,7 @@ The API documentation is available at `localhost:8000/docs` by default.
 ## To do
 
 - Backend: Printing using cups
-- Backend: Cleanup qr codes once they are printed, qr code route
-- Frontend: Admin dashboard
+- Backend: Cleanup qr codes once they are printed, enhance the security of csv route
+- Backend: Enhance the security of user creation/updating (plaintext password from front to back)
+- Frontend: Finish Admin dashboard
 - More efficient use of environment variables on the backend
