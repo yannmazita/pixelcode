@@ -6,6 +6,7 @@ import { User, UserCreate } from '@/interfaces.ts';
 
 export const useUserStore = defineStore('user', () => {
     const users: Ref<User[]> = ref([]);
+    const totalUsers: Ref<number> = ref(0);
 
     async function getUsers(offset: number = 0, limit: number = 25): Promise<void> {
         const authenticationStore = useAuthenticationStore();
@@ -14,7 +15,8 @@ export const useUserStore = defineStore('user', () => {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` },
                 params: { offset, limit },
             });
-            users.value = response.data;
+            users.value = response.data[0];
+            totalUsers.value = response.data[1];
         } catch (error) {
             console.error('Failed to get users:', error);
         }
@@ -54,6 +56,7 @@ export const useUserStore = defineStore('user', () => {
     }
     return {
         users,
+        totalUsers,
         getUsers,
         addUser,
         updateUser,

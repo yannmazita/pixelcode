@@ -43,24 +43,31 @@
                 </tbody>
             </table>
         </div>
-        <PaginationBar @previousButtonClick="getPreviousUsers" @nextButtonClick="getNextUsers"></PaginationBar>
+        <PaginationBar @previousButtonClick="getPreviousUsers" @nextButtonClick="getNextUsers" :previousButtonDisabled="!canGoPrevious" :nextButtonDisabled="!canGoNext"></PaginationBar>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, Ref, onMounted } from 'vue';
+import { ref, Ref, onMounted, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user.ts';
 import PaginationBar from '@/components/AppPaginationBar.vue';
 
 const userStore = useUserStore();
 const currentPage: Ref<number> = ref(0);
 const limit: number = 14;
+const { totalUsers } = storeToRefs(userStore);
 
 onMounted(() => {
     userStore.getUsers(currentPage.value * limit, limit);
 });
 
-
+const canGoPrevious = computed(() => {
+    return currentPage.value > 0;
+});
+const canGoNext = computed(() => {
+    return (currentPage.value + 1) * limit < totalUsers.value
+});
 const getPreviousUsers = () => {
     if (currentPage.value > 0) {
         currentPage.value--;
