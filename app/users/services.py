@@ -1,5 +1,5 @@
 from uuid import uuid4
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from app.auth.exceptions import incorrect_password
 from app.auth.services import get_password_hash, verify_password
@@ -136,8 +136,10 @@ class UserServiceBase:
         Returns:
             The list of users.
         """
+        total_count_statement = select(func.count()).select_from(User)
+        total_count: int = self.session.exec(total_count_statement).one()
         users = self.session.exec(select(User).offset(offset).limit(limit)).all()
-        return users
+        return users, total_count
 
 
 class UserService(UserServiceBase):

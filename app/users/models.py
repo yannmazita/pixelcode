@@ -22,6 +22,9 @@ class UserRead(UserBase):
     id: UUID
     roles: str
 
+class Users(SQLModel, table=False):
+    users: list[UserRead]
+    total: int
 
 class UserRolesUpdate(SQLModel, table=False):
     roles: str

@@ -1,9 +1,12 @@
+import { reactive, computed } from 'vue';
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
 import axios from 'axios';
+import { useSettingsStore } from '@/stores/settings.ts';
 import { EmployeeIdentifier, EmployeeState, IdentifierStatus } from '@/interfaces.ts';
 
 export const usePixelStore = defineStore('pixel', () => {
+    const settingsStore = useSettingsStore();
+    const kioskMode = computed(() => settingsStore.screenWidth > import.meta.env.VITE_KIOSK_WIDTH_CUTOFF)
     const identifierStatus: IdentifierStatus = reactive({
         email_exists: null,
         internal_id_exists: null,
@@ -81,5 +84,6 @@ export const usePixelStore = defineStore('pixel', () => {
         sendEmployeeIdentifier,
         sendVerificationCode,
         resetEmployeeState,
+        kioskMode,
     }
 })

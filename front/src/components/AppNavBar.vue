@@ -1,12 +1,13 @@
 <template>
     <div class="navbar bg-base-300 h-fit w-full py-0">
         <div class="navbar-start">
-            <router-link to="/" @click="menuStore.resetChoices()" class="btn btn-ghost text-5xl">pixelcode</router-link>
+            <router-link to="/" @click="menuStore.resetChoices()" class="btn btn-ghost text-2xl xl:text-5xl">pixelcode</router-link>
         </div>
 
         <div class="navbar-end text-4xl">
-            <router-link to="/" @click="goBack" v-if="showBackButton" class="btn btn-ghost text-5xl">↩️</router-link>
-            <router-link to="/help" @click="helpChoice" class="btn btn-ghost text-5xl">❔</router-link>
+            <router-link to="/" @click="goBack" v-if="showBackButton" class="btn btn-ghost text-2xl xl:text-3xl">↩️</router-link>
+            <router-link to="/admin" @click="adminChoice" class="btn btn-ghost text-2xl xl:text-3xl">🔒</router-link>
+            <router-link to="/help" @click="helpChoice" class="btn btn-ghost text-2xl xl:text-3xl">❔</router-link>
         </div>
     </div>
 </template>
@@ -19,10 +20,13 @@ import { useMenuStore } from '@/stores/menu.ts';
 const menuStore = useMenuStore();
 
 const showBackButton = computed(() => {
-    return menuStore.findEmployeeChoice || menuStore.codeChoice || menuStore.helpChoice;
+    return menuStore.findEmployeeChoice || menuStore.codeChoice || menuStore.helpChoice || menuStore.adminChoice;
 });
 const helpChoice = (): void => {
     menuStore.setHelpChoice(true);
+};
+const adminChoice = (): void => {
+    menuStore.setAdminChoice(true);
 };
 const goBack = (): void => {
     menuStore.resetChoices();

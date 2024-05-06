@@ -12,7 +12,6 @@ export const useAuthenticationStore = defineStore('authentication', () => {
     const user: User = reactive({
         id: null,
         username: null,
-        player_id: null,
     });
 
     // This function is to be called when the user is already logged in.

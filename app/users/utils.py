@@ -22,3 +22,27 @@ def create_superuser():
     admin_service.update_user_roles_by_attribute(
         UserAttribute.USERNAME, "admin", UserRolesUpdate(roles="admin")
     )
+
+
+# Write a function to populate the database with 150 fake users with either the role "admin" or simply no role update
+
+
+def create_fake_users():
+    session: Session = Session(engine)
+    service = UserService(session)
+    for i in range(150):
+        user: UserCreate = UserCreate(
+            username=f"fake_user_{i}",
+            password="secret",
+        )
+        try:
+            service.create_user(user)
+        except HTTPException as e:
+            pass
+        if i % 2 == 0:
+            admin_service = UserAdminService(session)
+            admin_service.update_user_roles_by_attribute(
+                UserAttribute.USERNAME,
+                f"fake_user_{i}",
+                UserRolesUpdate(roles="user:own websockets"),
+            )

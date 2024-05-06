@@ -3,9 +3,15 @@ export interface TokenData {
     token_type: string | null,
 }
 
+export interface UserCreate {
+    username: string,
+    password: string,
+}
+
 export interface User {
-    id: string | null,
-    username: string | null,
+    id: string,
+    username: string,
+    roles: string,
 }
 
 export interface EmployeeIdentifier {

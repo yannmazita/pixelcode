@@ -13,7 +13,7 @@ from app.auth import router as auth_routes
 from app.employees import router as employee_routes
 from app.employees.utils import add_fake_employee, add_fake_employee_state
 from app.users import router as user_routes
-from app.users.utils import create_superuser
+from app.users.utils import create_superuser, create_fake_users
 from app.database import create_db_and_tables
 
 
@@ -26,6 +26,7 @@ async def lifespan(app: FastAPI):
     add_fake_employee()
     add_fake_employee_state()
     create_superuser()
+    create_fake_users()
     yield
 
 

@@ -1,5 +1,5 @@
 <template>
-    <button class="btn btn-primary text-6xl active:bg-transparent h-fit w-fit py-3" @click="handleClick">
+    <button class="btn btn-primary text-2xl xl:text-4xl active:bg-transparent h-fit w-fit py-3" @click="handleClick">
         <slot></slot>
     </button>
 </template>
