@@ -22,7 +22,7 @@ const message: Ref<string> = ref<string>("");
 
 const jumpToHome = (): void => {
     showModal.value = false;
-    menuStore.resetChoices();
+    menuStore.resetPage();
 };
 
 const identityError = computed(() => {
