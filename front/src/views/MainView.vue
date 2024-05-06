@@ -11,12 +11,10 @@ import VerificationCode from '@/views/VerificationCode.vue'
 import PageTitle from '@/components/AppPageTitle.vue'
 import { useMenuStore } from '@/stores/menu.ts';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 
 const menuStore = useMenuStore();
-
-const currentPage = computed(() => {
-    return menuStore.currentPageTitle;
-});
+const { currentPageTitle: currentPage, } = storeToRefs(menuStore);
 
 const visibleComponent = computed(() => {
     if (menuStore.findEmployeeChoice) {
