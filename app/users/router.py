@@ -12,6 +12,7 @@ from app.users.models import (
     UserPasswordUpdate,
     UserRead,
     UserRolesUpdate,
+    Users,
 )
 from app.users.services import UserService, UserAdminService
 from app.users.schemas import UserAttribute
@@ -79,7 +80,7 @@ async def get_user_by_username(
         )
 
 
-@router.get("/all", response_model=list[UserRead])
+@router.get("/all", response_model=Users)
 async def get_all_users(
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
     session: Annotated[Session, Depends(get_session)],
@@ -88,8 +89,8 @@ async def get_all_users(
 ):
     service = UserService(session)
     try:
-        users = service.get_users(offset, limit)
-        return users
+        users, total_count = service.get_users(offset, limit)
+        return users, total_count
     except HTTPException as e:
         raise e
     except Exception as e:
