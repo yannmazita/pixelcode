@@ -5,27 +5,32 @@
     </div>
 </template>
 <script setup lang="ts">
-import HomeView from '@/views/HomeView.vue';
-import FindEmployee from '@/views/FindEmployeeView.vue'
-import VerificationCode from '@/views/VerificationCode.vue'
-import PageTitle from '@/components/AppPageTitle.vue'
 import { useMenuStore } from '@/stores/menu.ts';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { PageType } from '@/enums.ts';
+import HomeView from '@/views/HomeView.vue';
+import FindEmployee from '@/views/FindEmployeeView.vue';
+import VerificationCode from '@/views/VerificationCode.vue';
+import PageTitle from '@/components/AppPageTitle.vue';
 
 const menuStore = useMenuStore();
-const { currentPageTitle: currentPage, } = storeToRefs(menuStore);
+const { currentPage } = storeToRefs(menuStore);
 
 const visibleComponent = computed(() => {
-    if (menuStore.findEmployeeChoice) {
+    if (menuStore.currentPage === PageType.FIND_EMPLOYEE) {
         return FindEmployee;
     }
-    else if (menuStore.codeChoice) {
+    else if (menuStore.currentPage === PageType.VERIFICATION_CODE) {
         return VerificationCode;
     }
     else {
         return HomeView;
     }
 
+});
+
+onMounted(() => {
+    menuStore.setCurrentPage(PageType.HOME);
 });
 </script>

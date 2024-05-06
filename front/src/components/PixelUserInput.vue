@@ -19,17 +19,20 @@
 <script setup lang="ts">
 import { useMenuStore } from '@/stores/menu.ts';
 import { usePixelStore } from '@/stores/pixel.ts';
+import { useSearchStore } from '@/stores/search.ts';
 import { useSettingsStore } from '@/stores/settings.ts';
 import { computed, onMounted, onUnmounted } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/yup';
 import { object, string } from 'yup';
-import AppInput from '@/components/AppInput.vue'
-import AppButton from '@/components/AppButton.vue'
-import Keyboard from '@/components/AppVisualKeyboard.vue'
+import AppInput from '@/components/AppInput.vue';
+import AppButton from '@/components/AppButton.vue';
+import Keyboard from '@/components/AppVisualKeyboard.vue';
+import { PageType, SearchType } from '@/enums.ts';
 
 const menuStore = useMenuStore();
 const pixelStore = usePixelStore();
+const searchStore = useSearchStore();
 const settingsStore = useSettingsStore();
 
 const schema = toTypedSchema(
@@ -43,17 +46,17 @@ const { handleSubmit, isSubmitting, defineField } = useForm({
 const [userInput] = defineField('userInput');
 
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
-    if (menuStore.findEmployeeByEmailChoice) {
+    if (searchStore.currentType === SearchType.SEARCH_BY_EMAIL) {
         await pixelStore.sendEmployeeIdentifier({
             internal_id: null,
             email: values.userInput.toLowerCase(),
         });
-    } else if (menuStore.findEmployeeByInternalIDChoice) {
+    } else if (searchStore.currentType === SearchType.SEARCH_BY_ID) {
         await pixelStore.sendEmployeeIdentifier({
             internal_id: values.userInput,
             email: null,
         });
-    } else if (menuStore.codeChoice) {
+    } else if (menuStore.currentPage === PageType.VERIFICATION_CODE) {
         //await pixelStore.sendVerificationCode(internal_id, values.userInput);
     }
 
@@ -70,18 +73,18 @@ const updateAppInput = (key: string) => {
 };
 
 const keys = computed(() => {
-    if (menuStore.codeChoice) {
+    if (menuStore.currentPage === PageType.VERIFICATION_CODE) {
         return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     }
-    else if (menuStore.findEmployeeChoice) {
+    else if (menuStore.currentPage === PageType.FIND_EMPLOYEE) {
         return;
     };
 });
 const otherRows = computed(() => {
-    if (menuStore.codeChoice) {
+    if (menuStore.currentPage === PageType.VERIFICATION_CODE) {
         return [];
     }
-    else if (menuStore.findEmployeeChoice) {
+    else if (menuStore.currentPage === PageType.FIND_EMPLOYEE) {
         return;
     }
 });

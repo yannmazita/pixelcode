@@ -6,5 +6,5 @@
 </template>
 
 <script setup lang="ts">
-import UserList from '@/components/AppUserList.vue'
+import UserList from '@/components/AppUserList.vue';
 </script>
