@@ -1,5 +1,13 @@
 <template>
-    <EditForm :show-modal="showEditForm" :user-id="editUserId" @close-event="closeEditForm"></EditForm>
+    <EditForm :show-modal="showEditForm" :user-id="editUserId" @close-event="closeEditForm"
+        @update-event="refreshUsers"></EditForm>
+    <DeletionConfirmation :show-modal="showDeleteConfirmation" @click-event-a="deleteUser(userIdToDelete)"
+        @click-event-b="closeDeleteConfirmation">
+        <template #headerText>Deletion !</template>
+        <template #paragraphText>Are you sure you want to delete user {{ userIdToDelete }} ?</template>
+        <template #buttonTextA>Yes</template>
+        <template #buttonTextB>No</template>
+    </DeletionConfirmation>
     <div class="flex flex-col h-full justify-between">
         <div id="app-user-list-container" class="flex justify-center">
             <table id="app-user-list-table" class="w-full border-collapse shadow-md">
@@ -37,7 +45,7 @@
                         <td class="p-1 border">
                             <div class="flex justify-center">
                                 <button @click="openEditForm(user.id)">📝</button>
-                                <button @click="">❌</button>
+                                <button @click="openDeleteConfirmation(user.id)">❌</button>
                             </div>
                         </td>
                     </tr>
@@ -55,13 +63,16 @@ import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user.ts';
 import PaginationBar from '@/components/AppPaginationBar.vue';
 import EditForm from '@/components/AppUserEditForm.vue';
+import DeletionConfirmation from '@/components/AppModalTwoButtons.vue';
 
 const userStore = useUserStore();
 const currentPage: Ref<number> = ref(0);
 const limit: number = 14;
 const { totalUsers } = storeToRefs(userStore);
+const showDeleteConfirmation: Ref<boolean> = ref(false);
 const showEditForm: Ref<boolean> = ref(false);
-const editUserId: Ref<string | null> = ref(null);
+const editUserId: Ref<string> = ref("");
+const userIdToDelete: Ref<string> = ref("");
 
 onMounted(() => {
     userStore.getUsers(currentPage.value * limit, limit);
@@ -92,6 +103,9 @@ const truncateData = (data: string) => {
         return data;
     }
 };
+const refreshUsers = () => {
+    userStore.getUsers(currentPage.value * limit, limit);
+};
 
 const openEditForm = (id: string) => {
     showEditForm.value = true;
@@ -99,6 +113,19 @@ const openEditForm = (id: string) => {
 };
 const closeEditForm = () => {
     showEditForm.value = false;
-    editUserId.value = null;
+    editUserId.value = "";
+};
+const openDeleteConfirmation = (id: string) => {
+    showDeleteConfirmation.value = true;
+    userIdToDelete.value = id;
+};
+const closeDeleteConfirmation = () => {
+    showDeleteConfirmation.value = false;
+    userIdToDelete.value = "";
+};
+const deleteUser = (id: string) => {
+    userStore.deleteUser(id);
+    closeDeleteConfirmation();
+    refreshUsers();
 };
 </script>

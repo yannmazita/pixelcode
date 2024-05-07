@@ -27,7 +27,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.post(`${import.meta.env.VITE_API_URL}/users/`, userData, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to add user:', error);
         }
@@ -38,7 +37,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.put(`${import.meta.env.VITE_API_URL}/users/id/${id}`, userData, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to update user:', error);
         }
@@ -49,7 +47,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.patch(`${import.meta.env.VITE_API_URL}/users/id/${id}/roles`, { roles }, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to update user roles:', error);
         }
@@ -60,7 +57,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.delete(`${import.meta.env.VITE_API_URL}/users/id/${id}`, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to delete user:', error);
         }

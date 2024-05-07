@@ -29,11 +29,15 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{
     'closeEvent': [value: boolean],
+    'updateEvent': [value: boolean],
 }>();
 const userStore = useUserStore();
 
 const closeModal = () => {
     emit('closeEvent', false);
+};
+const notifyUpdate = () => {
+    emit('updateEvent', true);
 };
 
 const schema = toTypedSchema(
@@ -52,6 +56,7 @@ const onSubmit = handleSubmit(async (values, { resetForm }) => {
         await userStore.updateUserRoles(props.userId, values.roles);
     }
     resetForm();
+    notifyUpdate();
     closeModal();
 });
 
