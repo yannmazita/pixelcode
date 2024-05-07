@@ -40,7 +40,7 @@ class EmployeeState(EmployeeStateBase, table=True):
 
 
 class EmployeeStateRead(EmployeeStateBase):
-    pass
+    id: UUID
 
 
 class EmployeeIdentifier(SQLModel, table=False):

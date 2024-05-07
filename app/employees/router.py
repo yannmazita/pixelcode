@@ -3,7 +3,6 @@ from uuid import UUID
 from fastapi import (
     APIRouter,
     Depends,
-    File,
     UploadFile,
     HTTPException,
     Security,
@@ -114,50 +113,6 @@ async def get_employee_by_id(
         )
 
 
-@router.get("/internal_id/{internal_id}", response_model=EmployeeRead)
-async def get_employee_by_internal_id(
-    internal_id: str,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        employee = admin_service.get_employee_by_attribute(
-            EmployeeAttribute.INTERNAL_ID, internal_id
-        )
-        return employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
-@router.get("/email/{email}", response_model=EmployeeRead)
-async def get_employee_by_email(
-    email: EmailStr,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        employee = admin_service.get_employee_by_attribute(
-            EmployeeAttribute.EMAIL, email
-        )
-        return employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
 @router.get("/all", response_model=list[EmployeeRead])
 async def get_all_employees(
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
@@ -200,52 +155,6 @@ async def update_employee_by_id(
         )
 
 
-@router.put("/internal_id/{internal_id}", response_model=EmployeeRead)
-async def update_employee_by_internal_id(
-    internal_id: str,
-    employee: EmployeeCreate,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        updated_employee = admin_service.update_employee_by_attribute(
-            EmployeeAttribute.INTERNAL_ID, internal_id, employee
-        )
-        return updated_employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
-@router.put("/email/{email}", response_model=EmployeeRead)
-async def update_employee_by_email(
-    email: EmailStr,
-    employee: EmployeeCreate,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        updated_employee = admin_service.update_employee_by_attribute(
-            EmployeeAttribute.EMAIL, email, employee
-        )
-        return updated_employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
 @router.delete("/id/{id}", response_model=EmployeeRead)
 async def delete_employee_by_id(
     id: UUID,
@@ -256,50 +165,6 @@ async def delete_employee_by_id(
     try:
         employee = admin_service.delete_employee_by_attribute(
             EmployeeAttribute.ID, str(id)
-        )
-        return employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
-@router.delete("/internal_id/{internal_id}", response_model=EmployeeRead)
-async def delete_employee_by_internal_id(
-    internal_id: str,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        employee = admin_service.delete_employee_by_attribute(
-            EmployeeAttribute.INTERNAL_ID, internal_id
-        )
-        return employee
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
-        )
-
-
-@router.delete("/email/{email}", response_model=EmployeeRead)
-async def delete_employee_by_email(
-    email: EmailStr,
-    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
-    session: Annotated[Session, Depends(get_session)],
-):
-    admin_service = EmployeeAdminService(session)
-    try:
-        employee = admin_service.delete_employee_by_attribute(
-            EmployeeAttribute.EMAIL, email
         )
         return employee
     except HTTPException as e:
