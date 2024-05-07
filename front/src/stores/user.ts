@@ -43,6 +43,17 @@ export const useUserStore = defineStore('user', () => {
             console.error('Failed to update user:', error);
         }
     };
+    async function updateUserRoles(id: string, roles: string): Promise<void> {
+        const authenticationStore = useAuthenticationStore();
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/users/id/${id}/roles`, { roles }, {
+                headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
+            });
+            await getUsers();
+        } catch (error) {
+            console.error('Failed to update user roles:', error);
+        }
+    };
     async function deleteUser(id: string): Promise<void> {
         const authenticationStore = useAuthenticationStore();
         try {
@@ -60,6 +71,7 @@ export const useUserStore = defineStore('user', () => {
         getUsers,
         addUser,
         updateUser,
+        updateUserRoles,
         deleteUser,
     }
 })

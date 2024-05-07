@@ -1,4 +1,5 @@
 <template>
+    <EditForm :show-modal="showEditForm" :user-id="editUserId" @close-event="closeEditForm"></EditForm>
     <div class="flex flex-col h-full justify-between">
         <div id="app-user-list-container" class="flex justify-center">
             <table id="app-user-list-table" class="w-full border-collapse shadow-md">
@@ -35,15 +36,16 @@
                         </td>
                         <td class="p-1 border">
                             <div class="flex justify-center">
-                                <button @click="editUser(user.id)">📝</button>
-                                <button @click="deleteUser(user.id)">❌</button>
+                                <button @click="openEditForm(user.id)">📝</button>
+                                <button @click="">❌</button>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <PaginationBar @previousButtonClick="getPreviousUsers" @nextButtonClick="getNextUsers" :previousButtonDisabled="!canGoPrevious" :nextButtonDisabled="!canGoNext"></PaginationBar>
+        <PaginationBar @previousButtonClick="getPreviousUsers" @nextButtonClick="getNextUsers"
+            :previousButtonDisabled="!canGoPrevious" :nextButtonDisabled="!canGoNext"></PaginationBar>
     </div>
 </template>
 
@@ -52,11 +54,14 @@ import { ref, Ref, onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user.ts';
 import PaginationBar from '@/components/AppPaginationBar.vue';
+import EditForm from '@/components/AppUserEditForm.vue';
 
 const userStore = useUserStore();
 const currentPage: Ref<number> = ref(0);
 const limit: number = 14;
 const { totalUsers } = storeToRefs(userStore);
+const showEditForm: Ref<boolean> = ref(false);
+const editUserId: Ref<string | null> = ref(null);
 
 onMounted(() => {
     userStore.getUsers(currentPage.value * limit, limit);
@@ -88,12 +93,12 @@ const truncateData = (data: string) => {
     }
 };
 
-const editUser = (id: string) => {
-    console.log('Edit user:', id);
+const openEditForm = (id: string) => {
+    showEditForm.value = true;
+    editUserId.value = id;
 };
-
-const deleteUser = (id: string) => {
-    //userStore.deleteUser(id);
-    console.log('Delete user:', id);
+const closeEditForm = () => {
+    showEditForm.value = false;
+    editUserId.value = null;
 };
 </script>
