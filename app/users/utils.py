@@ -24,9 +24,6 @@ def create_superuser():
     )
 
 
-# Write a function to populate the database with 150 fake users with either the role "admin" or simply no role update
-
-
 def create_fake_users():
     session: Session = Session(engine)
     service = UserService(session)
