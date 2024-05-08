@@ -12,6 +12,7 @@ from app.users.models import (
     UserPasswordUpdate,
     UserRead,
     UserRolesUpdate,
+    UserUsernameUpdate,
 )
 from app.users.services import UserService, UserAdminService
 from app.users.schemas import UserAttribute
@@ -59,6 +60,7 @@ async def get_user_by_id(
             detail=str(e),
         )
 
+
 @router.get("/all", response_model=tuple[list[UserRead], int])
 async def get_all_users(
     token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
@@ -100,6 +102,7 @@ async def update_user_by_id(
             detail=str(e),
         )
 
+
 @router.delete("/id/{id}", response_model=UserRead)
 async def delete_user_by_id(
     id: UUID,
@@ -114,6 +117,28 @@ async def delete_user_by_id(
         raise e
     except Exception as e:
         print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.patch("/id/{id}/username", response_model=UserRead)
+async def update_user_username_by_id(
+    id: UUID,
+    username_data: UserUsernameUpdate,
+    token_data: Annotated[TokenData, Security(validate_token, scopes=["admin"])],
+    session: Annotated[Session, Depends(get_session)],
+):
+    admin_service = UserAdminService(session)
+    try:
+        updated_user = admin_service.update_user_username_by_attribute(
+            UserAttribute.ID, str(id), username_data
+        )
+        return updated_user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
@@ -140,6 +165,7 @@ async def update_user_roles_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+
 
 @router.get("/me", response_model=UserRead)
 async def get_own_user(user: Annotated[User, Depends(get_own_user)]):
