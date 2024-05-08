@@ -53,6 +53,7 @@ const [username] = defineField('username');
 const [roles] = defineField('roles');
 const onSubmit = handleSubmit(async (values, { resetForm }) => {
     if (props.userId) {
+        await userStore.updateUserUsername(props.userId, values.username);
         await userStore.updateUserRoles(props.userId, values.roles);
     }
     resetForm();

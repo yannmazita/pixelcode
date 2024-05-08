@@ -104,7 +104,6 @@ const truncateData = (data: string) => {
     }
 };
 const refreshUsers = async () => {
-    console.log('Refreshing users');
     await userStore.getUsers(currentPage.value * limit, limit);
 };
 
