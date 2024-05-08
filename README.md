@@ -88,8 +88,10 @@ The API documentation is available at `localhost:8000/docs` by default.
 
 ## To do
 
+- Update README pictures
 - Backend: Printing using cups
 - Backend: Cleanup qr codes once they are printed, enhance the security of csv route
 - Backend: Enhance OpenAPI documentation
-- Frontend: Finish Admin dashboard
+- Frontend: Implement employee management in admin dashboard
+- Frontend: Enhance error/loading handling when accessing backend
 - More efficient use of environment variables on the backend

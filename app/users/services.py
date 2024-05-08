@@ -8,7 +8,13 @@ from app.users.exceptions import (
     multiple_users_found,
     user_already_exists,
 )
-from app.users.models import User, UserCreate, UserPasswordUpdate, UserRolesUpdate
+from app.users.models import (
+    User,
+    UserCreate,
+    UserPasswordUpdate,
+    UserRolesUpdate,
+    UserUsernameUpdate,
+)
 from app.users.schemas import UserAttribute
 
 
@@ -178,6 +184,30 @@ class UserAdminService(UserServiceBase):
 
     def __init__(self, session: Session):
         super().__init__(session)
+
+    def update_user_username_by_attribute(
+        self, attribute: UserAttribute, value: str, new_username: UserUsernameUpdate
+    ) -> User:
+        """
+        Update a user's username using a specified attribute.
+        Args:
+            attribute: The attribute to filter by.
+            value: The value to filter by.
+            new_username: The new username.
+        Returns:
+            The updated user.
+        """
+        try:
+            user = self.get_user_by_attribute(attribute, value)
+            user.username = new_username.username
+            self.session.add(user)
+            self.session.commit()
+            self.session.refresh(user)
+            return user
+        except NoResultFound:
+            raise user_not_found
+        except MultipleResultsFound:
+            raise multiple_users_found
 
     def update_user_roles_by_attribute(
         self, attribute: UserAttribute, value: str, new_roles: UserRolesUpdate

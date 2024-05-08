@@ -27,7 +27,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.post(`${import.meta.env.VITE_API_URL}/users/`, userData, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to add user:', error);
         }
@@ -38,9 +37,28 @@ export const useUserStore = defineStore('user', () => {
             await axios.put(`${import.meta.env.VITE_API_URL}/users/id/${id}`, userData, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to update user:', error);
+        }
+    };
+    async function updateUserUsername(id: string, username: string): Promise<void> {
+        const authenticationStore = useAuthenticationStore();
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/users/id/${id}/username`, { username }, {
+                headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
+            });
+        } catch (error) {
+            console.error('Failed to update user username:', error);
+        }
+    }
+    async function updateUserRoles(id: string, roles: string): Promise<void> {
+        const authenticationStore = useAuthenticationStore();
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/users/id/${id}/roles`, { roles }, {
+                headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
+            });
+        } catch (error) {
+            console.error('Failed to update user roles:', error);
         }
     };
     async function deleteUser(id: string): Promise<void> {
@@ -49,7 +67,6 @@ export const useUserStore = defineStore('user', () => {
             await axios.delete(`${import.meta.env.VITE_API_URL}/users/id/${id}`, {
                 headers: { Authorization: `Bearer ${authenticationStore.tokenData.access_token}` }
             });
-            await getUsers();
         } catch (error) {
             console.error('Failed to delete user:', error);
         }
@@ -60,6 +77,8 @@ export const useUserStore = defineStore('user', () => {
         getUsers,
         addUser,
         updateUser,
+        updateUserUsername,
+        updateUserRoles,
         deleteUser,
     }
 })
