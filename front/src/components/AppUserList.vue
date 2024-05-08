@@ -1,7 +1,7 @@
 <template>
     <EditForm :show-modal="showEditForm" :user-id="editUserId" @close-event="closeEditForm"
         @update-event="refreshUsers"></EditForm>
-    <DeletionConfirmation :show-modal="showDeleteConfirmation" @click-event-a="deleteUser(userIdToDelete)"
+    <DeletionConfirmation :show-modal="showDeleteConfirmation" @click-event-a="deleteUser"
         @click-event-b="closeDeleteConfirmation">
         <template #headerText>Deletion !</template>
         <template #paragraphText>Are you sure you want to delete user {{ userIdToDelete }} ?</template>
@@ -74,8 +74,8 @@ const showEditForm: Ref<boolean> = ref(false);
 const editUserId: Ref<string> = ref("");
 const userIdToDelete: Ref<string> = ref("");
 
-onMounted(() => {
-    userStore.getUsers(currentPage.value * limit, limit);
+onMounted(async () => {
+    await userStore.getUsers(currentPage.value * limit, limit);
 });
 
 const canGoPrevious = computed(() => {
@@ -84,15 +84,15 @@ const canGoPrevious = computed(() => {
 const canGoNext = computed(() => {
     return (currentPage.value + 1) * limit < totalUsers.value
 });
-const getPreviousUsers = () => {
+const getPreviousUsers = async () => {
     if (currentPage.value > 0) {
         currentPage.value--;
-        userStore.getUsers(currentPage.value * limit, limit);
+        await userStore.getUsers(currentPage.value * limit, limit);
     }
 };
-const getNextUsers = () => {
+const getNextUsers = async () => {
     currentPage.value++;
-    userStore.getUsers(currentPage.value * limit, limit);
+    await userStore.getUsers(currentPage.value * limit, limit);
 };
 
 const truncateData = (data: string) => {
@@ -103,8 +103,9 @@ const truncateData = (data: string) => {
         return data;
     }
 };
-const refreshUsers = () => {
-    userStore.getUsers(currentPage.value * limit, limit);
+const refreshUsers = async () => {
+    console.log('Refreshing users');
+    await userStore.getUsers(currentPage.value * limit, limit);
 };
 
 const openEditForm = (id: string) => {
@@ -123,9 +124,15 @@ const closeDeleteConfirmation = () => {
     showDeleteConfirmation.value = false;
     userIdToDelete.value = "";
 };
-const deleteUser = (id: string) => {
-    userStore.deleteUser(id);
-    closeDeleteConfirmation();
-    refreshUsers();
+const deleteUser = async () => {
+    if (userIdToDelete.value) {
+        try {
+            await userStore.deleteUser(userIdToDelete.value);
+            refreshUsers();
+            closeDeleteConfirmation();
+        } catch (error) {
+            console.error('Error deleting user:', error);
+        }
+    }
 };
 </script>
